@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trator 3D</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020617;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden}
+#g{position:relative}
+canvas{display:block;border-radius:12px;box-shadow:0 0 40px rgba(34,211,238,.15)}
+</style>
+</head>
+<body>
+<div id="g"></div>
+<script src="phaser.min.js"></script>
+<script>
+const W=900,H=600,VH=H/2-50;
+function pr(X,Y,Z){let e=250/Z;return{x:W/2+X*e,y:VH+(120-Y)*e}}
+
+class Jogo extends Phaser.Scene{
+    constructor(){super({key:'J'})}
+
+    create(){
+        this.keys=this.input.keyboard.createCursorKeys();
+        this.t={x:0,z:100,a:0,v:0};
+        this.add.rectangle(W/2,VH/2,W,VH,0x1e3a5f).setDepth(0);
+        this.add.rectangle(W/2,VH+(H-VH)/2,W,H-VH,0x2d6b3a).setDepth(0);
+        this.obs=[];
+        for(let i=0;i<100;i++){
+            let l=Math.random()>.5?1:-1;
+            this.obs.push({x:(Math.random()*600+60)*l,z:Math.random()*4000,c:Math.random()>.5?0xeab308:0x84cc16});
+        }
+        this.gf=this.add.graphics().setDepth(5);
+        this.add.text(10,8,'[SETAS] andar  [ESPAÇO] travar',{fontSize:'13px',color:'#94a3b8',backgroundColor:'#000a',padding:{x:5,y:2}}).setDepth(99);
+    }
+
+    update(t,d){
+        let dt=d/1000;
+        if(this.keys.up.isDown)this.t.v=Phaser.Math.Linear(this.t.v,280,.07);
+        else if(this.keys.down.isDown)this.t.v=Phaser.Math.Linear(this.t.v,-120,.07);
+        else this.t.v=Phaser.Math.Linear(this.t.v,0,.03);
+        if(this.keys.space.isDown)this.t.v=Phaser.Math.Linear(this.t.v,0,.3);
+        if(this.keys.left.isDown)this.t.a-=1.8*dt;
+        if(this.keys.right.isDown)this.t.a+=1.8*dt;
+        this.t.x+=Math.sin(this.t.a)*this.t.v*dt;
+        this.t.z+=Math.cos(this.t.a)*this.t.v*dt;
+
+        this.gf.clear();
+
+        // Estrada (dinâmica)
+        this.gf.fillStyle(0x475569,1);
+        this.gf.beginPath();
+        let p=pr(-80,0,this.t.z+50),p2=pr(80,0,this.t.z+50);
+        let p3=pr(-80,0,this.t.z+900),p4=pr(80,0,this.t.z+900);
+        this.gf.moveTo(p.x,p.y);this.gf.lineTo(p3.x,p3.y);
+        this.gf.lineTo(p4.x,p4.y);this.gf.lineTo(p2.x,p2.y);
+        this.gf.closePath();this.gf.fillPath();
+
+        // Objetos
+        let v=this.obs.map(o=>{
+            if(o.z<this.t.z-60)o.z+=4000;
+            return{o,rx:o.x-this.t.x,rz:o.z-this.t.z};
+        }).filter(x=>x.rz>10);
+        v.sort((a,b)=>b.rz-a.rz);
+        v.forEach(x=>{
+            let p=pr(x.rx,0,x.rz),e=250/x.rz,tx=30*e,ty=45*e;
+            if(p.x>-tx&&p.x<W+tx){
+                this.gf.fillStyle(x.o.c,1);
+                this.gf.fillRect(p.x-tx/4,p.y-ty,tx/2,ty);
+            }
+        });
+
+        // Trator (em cima da estrada)
+        let tx=W/2,ty=VH+190;
+        this.gf.fillStyle(0x000,0.25);
+        this.gf.fillEllipse(tx,ty+8,40,10);
+        this.gf.fillStyle(0xef4444,1);
+        this.gf.fillRoundedRect(tx-16,ty-16,32,22,5);
+        this.gf.fillStyle(0x111,1);
+        this.gf.fillCircle(tx-14,ty-3,8);
+        this.gf.fillCircle(tx+14,ty-3,8);
+        this.gf.fillStyle(0x374151,1);
+        this.gf.fillCircle(tx-14,ty-3,4);
+        this.gf.fillCircle(tx+14,ty-3,4);
+        this.gf.fillStyle(0x22d3ee,0.9);
+        this.gf.fillRoundedRect(tx-9,ty-10,18,10,3);
+        this.gf.fillStyle(0xfff,0.3);
+        this.gf.fillRect(tx-7,ty-8,5,3);
+        this.gf.fillStyle(0x1f2937,1);
+        this.gf.fillRect(tx+11,ty-22,4,8);
+        if(this.t.v>10||this.t.v<-10){
+            this.gf.fillStyle(0xf97316,1);
+            this.gf.fillCircle(tx+13,ty-23,3);
+        }
+    }
+}
+
+new Phaser.Game({type:Phaser.AUTO,width:W,height:H,parent:'g',backgroundColor:'#020617',scene:[Jogo]});
+</script>
+</body>
+</html>

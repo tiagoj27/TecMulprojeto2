@@ -1,0 +1,66 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #060d1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+#game-wrapper {
+    position: relative;
+    width: 1000px;
+    height: 750px;
+}
+canvas {
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 0 0 2px rgba(34,211,238,0.3), 0 0 40px rgba(34,211,238,0.12), 0 20px 50px rgba(0,0,0,0.8);
+}
+#toasts {
+    position: absolute;
+    top: 16px; right: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 100; pointer-events: none;
+}
+.toast {
+    background: rgba(6,13,26,0.96);
+    border: 1px solid rgba(34,211,238,0.3);
+    border-left: 3px solid #22d3ee;
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: #e2e8f0;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px; font-weight: 700;
+    animation: tIn 0.25s ease forwards;
+    white-space: nowrap;
+}
+.toast.ok  { border-left-color: #4ade80; }
+.toast.war { border-left-color: #facc15; }
+.toast.err { border-left-color: #f87171; }
+@keyframes tIn  { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
+@keyframes tOut { from { opacity:1; } to { opacity:0; transform:translateX(16px); } }
+.coin-pop {
+    position: absolute;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 17px; font-weight: 900;
+    color: #facc15;
+    text-shadow: 0 0 10px rgba(250,204,21,0.7);
+    pointer-events: none;
+    animation: cpop 1s ease forwards;
+}
+@keyframes cpop { 0%{opacity:1;transform:translateY(0) scale(1);} 100%{opacity:0;transform:translateY(-55px) scale(1.2);} }
+#growbar {
+    position: absolute;
+    bottom: 14px; left: 50%; transform: translateX(-50%);
+    width: 280px;
+    background: rgba(6,13,26,0.82);
+    border: 1px solid rgba(34,211,238,0.25);
+    border-radius: 20px;
+    padding: 5px 12px;
+    display: flex; align-items: center; gap: 10px;
+    pointer-events: none;
+}
+#growbar span { font-family:'Exo 2',sans-serif; font-size:11px; font-weight:700; color:#64748b; white-space:nowrap; }
+#growtrack { flex:1; height:7px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden; }
+#growfill  { height:100%; background: linear-gradient(90deg,#4ade80,#22d3ee); border-radius:10px; width:0%; transition:width 0.15s linear; box-shadow:0 0 6px rgba(74,222,128,0.5); }
