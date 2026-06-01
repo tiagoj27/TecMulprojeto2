@@ -81,7 +81,7 @@ class TelaInicio extends Phaser.Scene {
     });
 
     // 5. Rodapé de Créditos discreto alinhado ao fundo do ecrã
-    this.add.text(centroX, alturaJogo - 50, 'Desenvolvido para Tecnologias Multimédia II', { 
+    this.add.text(centroX, alturaJogo - 50, 'Desenvolvido para Tecnologias de Multimédia', { 
         fontSize: '12px', 
         fill: '#546e7a',
         fontFamily: 'system-ui, -apple-system, sans-serif'
