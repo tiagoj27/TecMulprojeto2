@@ -761,13 +761,17 @@ class CenaQuinta extends Phaser.Scene {
     }
 
     update(t, dt) {
-
-        if (Phaser.Input.Keyboard.JustDown(this.teclaEsc)) {
-        this.scene.launch('MenuPausa'); // Abre o menu por cima
-        this.scene.pause();             // Pausa a quinta
-        return;                         // Pára a execução do update neste frame
-        }
         
+        if (Phaser.Input.Keyboard.JustDown(this.teclaEsc)) {
+         // Abre o menu de pausa em paralelo
+        this.scene.launch('MenuPausa'); 
+        // Pausa ESTA cena (a quinta)
+         this.scene.pause();             
+         // Bloqueia temporariamente o input nesta cena para não dar duplo clique acidental
+         this.input.keyboard.resetKeys(); 
+        return;
+        }
+
         if (!this.keys || !MaquinaEstados.podeConduzir()) return;
         this._ct += dt / 1000;
 
