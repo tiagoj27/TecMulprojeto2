@@ -281,6 +281,9 @@ class CenaQuinta extends Phaser.Scene {
         } else {
             toast('🌻 Bem-vindo à Quinta! Boa colheita!', 'ok', 3000);
         }
+
+
+        this.teclaEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     }
 
     iso(gx, gy) {
@@ -758,6 +761,17 @@ class CenaQuinta extends Phaser.Scene {
     }
 
     update(t, dt) {
+        
+        if (Phaser.Input.Keyboard.JustDown(this.teclaEsc)) {
+         // Abre o menu de pausa em paralelo
+        this.scene.launch('MenuPausa'); 
+        // Pausa ESTA cena (a quinta)
+         this.scene.pause();             
+         // Bloqueia temporariamente o input nesta cena para não dar duplo clique acidental
+         this.input.keyboard.resetKeys(); 
+        return;
+        }
+
         if (!this.keys || !MaquinaEstados.podeConduzir()) return;
         this._ct += dt / 1000;
 
