@@ -16,7 +16,7 @@ class TelaInicio extends Phaser.Scene {
     fundo.fillRect(0, 0, larguraJogo, alturaJogo);
 
     // 3. Título Principal centrado dinamicamente
-    let titulo = this.add.text(centroX, centroY - 120, 'QUINTA ISOMÉTRICA', { 
+    let titulo = this.add.text(centroX, centroY - 120, 'AgroGT ', { 
         fontSize: '46px', 
         fill: '#ffffff', 
         fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -26,7 +26,7 @@ class TelaInicio extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Subtítulo centrado dinamicamente
-    let subtitulo = this.add.text(centroX, centroY - 60, 'TURBO EDITION', { 
+    let subtitulo = this.add.text(centroX, centroY - 60, 'GAME EDITION', { 
         fontSize: '22px', 
         fill: '#4fc3f7', 
         fontFamily: 'system-ui, -apple-system, sans-serif',

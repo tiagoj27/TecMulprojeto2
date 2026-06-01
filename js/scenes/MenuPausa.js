@@ -75,7 +75,8 @@ class MenuPausa extends Phaser.Scene {
 
         // Evento de Clique para fechar a pausa
         zonaInterativa.on('pointerdown', () => {
-            this.retomar();
+            this.sair();
+
         });
 
         // 5. Configurar novamente a tecla ESC para fechar o menu
@@ -91,5 +92,11 @@ class MenuPausa extends Phaser.Scene {
     retomar() {
         this.scene.stop('MenuPausa');
         this.scene.resume('CenaQuinta');
+    }
+
+    sair() {
+        this.scene.stop('MenuPausa');
+        this.scene.stop('CenaQuinta');
+        this.scene.start('TelaInicio');
     }
 }
