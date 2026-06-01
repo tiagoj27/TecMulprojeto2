@@ -1,5 +1,5 @@
-// ─── MÁQUINA DE ESTADOS (campo ↔ loja) ───────────────────────────
-var Estado = { CAMPO: 'campo', LOJA: 'loja' };
+// ─── MÁQUINA DE ESTADOS (campo ↔ loja ↔ pomar) ───────────────────
+var Estado = { CAMPO: 'campo', LOJA: 'loja', POMAR: 'pomar', ANIMAIS: 'animais' };
 
 var MaquinaEstados = {
     atual: Estado.CAMPO,
@@ -23,6 +23,23 @@ var MaquinaEstados = {
         if (this.atual === Estado.CAMPO) return;
         this.mudar(Estado.CAMPO);
         if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
+        if (game.scene.isActive('CenaPomar')) game.scene.stop('CenaPomar');
+        if (game.scene.isActive('CenaAnimais')) game.scene.stop('CenaAnimais');
         game.scene.start('CenaQuinta', { fromShop: !!fromShop });
+    },
+
+    irPomar: function(game) {
+        if (this.atual === Estado.POMAR) return;
+        this.mudar(Estado.POMAR);
+        if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
+        game.scene.start('CenaPomar');
+    },
+
+    irAnimais: function(game) {
+        if (this.atual === Estado.ANIMAIS) return;
+        this.mudar(Estado.ANIMAIS);
+        if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
+        if (game.scene.isActive('CenaPomar')) game.scene.stop('CenaPomar');
+        game.scene.start('CenaAnimais');
     }
 };

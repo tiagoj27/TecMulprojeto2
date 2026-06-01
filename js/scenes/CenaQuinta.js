@@ -3,6 +3,76 @@ class CenaQuinta extends Phaser.Scene {
         super({ key: 'CenaQuinta' });
     }
 
+    dentroGrid(x, y) {
+        return x >= 0 && x < COLS && y >= 0 && y < ROWS;
+    }
+
+    posStand() {
+        return { x: -1, y: 0 };
+    }
+
+    posPomar() {
+        return { x: COLS, y: Math.floor(ROWS / 2) };
+    }
+
+    posAnimais() {
+        return { x: Math.floor(COLS / 2), y: ROWS };
+    }
+
+    ehTileAcesso(x, y) {
+        var s = this.posStand();
+        if (x === s.x && y === s.y) return true;
+        if (G.pomar) {
+            var p = this.posPomar();
+            if (x === p.x && y === p.y) return true;
+        }
+        if (G.animais) {
+            var a = this.posAnimais();
+            if (x === a.x && y === a.y) return true;
+        }
+        return false;
+    }
+
+    criarTileAcesso(opts) {
+        var tam = TAM;
+        var p = this.iso(opts.gx, opts.gy);
+
+        var g = this.add.graphics().setDepth(9998);
+        g.setPosition(p.x, p.y);
+        g.fillStyle(opts.fill || 0x164e63, 0.95);
+        g.lineStyle(2, opts.line || 0x22d3ee, 0.95);
+        g.beginPath();
+        g.moveTo(0, -tam * 0.5);
+        g.lineTo(tam, 0);
+        g.lineTo(0, tam * 0.5);
+        g.lineTo(-tam, 0);
+        g.closePath();
+        g.fillPath();
+        g.strokePath();
+
+        var zone = this.add.zone(p.x, p.y, tam * 2, tam)
+            .setDepth(9999)
+            .setInteractive(new Phaser.Geom.Polygon([
+                0, -tam * 0.5,
+                tam, 0,
+                0, tam * 0.5,
+                -tam, 0
+            ]), Phaser.Geom.Polygon.Contains);
+
+        if (opts.pulse) {
+            this.tweens.add({ targets: g, alpha: 0.55, duration: 850, yoyo: true, repeat: -1 });
+        }
+
+        var txt = this.add.text(p.x, p.y - 2, opts.label || '', {
+            fontFamily: "'Exo 2',sans-serif",
+            fontSize: opts.fontSize || '11px',
+            fontStyle: 'bold',
+            color: opts.textColor || '#e2e8f0'
+        }).setOrigin(0.5).setDepth(10000);
+
+        return { g: g, zone: zone, txt: txt };
+    }
+
     create(data) {
         self = this;
         MaquinaEstados.mudar(Estado.CAMPO);
@@ -23,6 +93,7 @@ class CenaQuinta extends Phaser.Scene {
         this.kD     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.kArado = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
         this.kM     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+        this.kP     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
         if (!carregarJogo()) {
             G.eventoDia = { msg: '🌅 Bem-vindo à quinta', cicloMult: 1, ganhoMult: 1, rega: 0 };
@@ -43,10 +114,16 @@ class CenaQuinta extends Phaser.Scene {
         }
         prepararEstadoJogo();
 
+        if (CULTURAS[G.sementeAtiva] && CULTURAS[G.sementeAtiva].requerPomar) {
+            G.sementeAtiva = G.sementeCampoAtiva || 'girassol';
+        } else {
+            G.sementeCampoAtiva = G.sementeAtiva;
+        }
+
         this.terreno  = [];
         this.gTiles   = [];
         this.gDetail  = [];
-        this.tLogico  = (data && data.fromShop) ? { x: 2, y: 0 } : { x: 3, y: 3 };
+        this.tLogico  = (data && data.fromShop) ? { x: 0, y: 0 } : { x: 3, y: 3 };
         this.tDirecao = { x: 0, y: 1 };
         this._cooldownLojaAte = (data && data.fromShop) ? this.time.now + 2500 : 0;
 
@@ -87,12 +164,53 @@ class CenaQuinta extends Phaser.Scene {
             }
         }
 
-        var pl = this.iso(0, 0);
-        var lbl = this.add.text(pl.x, pl.y - this.terreno[0][0] - 38, '▲ STAND', {
-            fontFamily: "'Exo 2',sans-serif", fontSize: '11px', fontStyle: 'bold',
-            color: '#22d3ee', backgroundColor: '#060d1acc', padding: { x:5, y:3 }
-        }).setOrigin(0.5).setDepth(9999);
-        this.tweens.add({ targets: lbl, alpha: 0.3, duration: 900, yoyo: true, repeat: -1 });
+        var standPos = this.posStand();
+        this.tileStand = this.criarTileAcesso({
+            gx: standPos.x,
+            gy: standPos.y,
+            label: '🛒 STAND',
+            fill: 0x0b2a35,
+            line: 0x22d3ee,
+            pulse: true
+        });
+        this.tileStand.zone.on('pointerdown', () => {
+            toast('🛒 A entrar no stand...', 'ok', 1200);
+            MaquinaEstados.irLoja(this.game);
+        });
+
+        this.tilePomar = null;
+        if (G.pomar) {
+            var pomarPos = this.posPomar();
+            this.tilePomar = this.criarTileAcesso({
+                gx: pomarPos.x,
+                gy: pomarPos.y,
+                label: '🍎 POMAR',
+                fill: 0x14532d,
+                line: 0x4ade80,
+                pulse: true
+            });
+            this.tilePomar.zone.on('pointerdown', () => {
+                toast('🍎 A ir para o pomar...', 'ok', 1200);
+                MaquinaEstados.irPomar(this.game);
+            });
+        }
+
+        this.tileAnimais = null;
+        if (G.animais) {
+            var animaisPos = this.posAnimais();
+            this.tileAnimais = this.criarTileAcesso({
+                gx: animaisPos.x,
+                gy: animaisPos.y,
+                label: '🐄 ANIMAIS',
+                fill: 0x3f1d0b,
+                line: 0xfbbf24,
+                pulse: true
+            });
+            this.tileAnimais.zone.on('pointerdown', () => {
+                toast('🐄 A ir para os animais...', 'ok', 1200);
+                MaquinaEstados.irAnimais(this.game);
+            });
+        }
 
         this.trCont  = this.add.container(0, 0).setDepth(9995);
         this.trShadow = this.add.graphics();
@@ -100,7 +218,7 @@ class CenaQuinta extends Phaser.Scene {
         this.trCont.add([this.trShadow, this.trGfx]);
         this.drawTrator();
 
-        var z0 = this.terreno[this.tLogico.x][this.tLogico.y];
+        var z0 = this.dentroGrid(this.tLogico.x, this.tLogico.y) ? this.terreno[this.tLogico.x][this.tLogico.y] : 0;
         var p0 = this.iso(this.tLogico.x, this.tLogico.y);
         this.alvoX = p0.x; this.alvoY = p0.y - z0;
         this.trCont.setPosition(this.alvoX, this.alvoY);
@@ -261,7 +379,7 @@ class CenaQuinta extends Phaser.Scene {
         if (!t || !d) return;
         t.clear(); d.clear();
 
-        var isShop  = (x === 0 && y === 0);
+        var isShop  = false;
         var unlock  = G.desbloq[x][y];
         var estado  = G.plantas[x][y];
         var regado  = G.rega[x][y];
@@ -485,6 +603,13 @@ class CenaQuinta extends Phaser.Scene {
             if (!silencioso) toast('🏠 Precisas da Estufa na loja!', 'err');
             return true;
         }
+        if (c.requerPomar) {
+            if (!silencioso) {
+                if (!G.pomar) toast('🍎 Precisas desbloquear o Pomar na loja!', 'err');
+                else toast('🍎 Esta cultura só pode ser plantada no Pomar (blip à direita)', 'war');
+            }
+            return true;
+        }
         var alvos = this.parcelasArado().filter(function(p) {
             return G.desbloq[p.x][p.y];
         });
@@ -544,8 +669,12 @@ class CenaQuinta extends Phaser.Scene {
 
     moverAspersor() {
         var tx = this.tLogico.x, ty = this.tLogico.y;
+        if (!this.dentroGrid(tx, ty)) {
+            toast('💦 Tens de estar numa parcela do campo para mexer no aspersor', 'war');
+            return;
+        }
         if (this.aspersorNaMao !== undefined && this.aspersorNaMao !== null) {
-            if (!G.desbloq[tx][ty] || (tx === 0 && ty === 0)) {
+            if (!G.desbloq[tx][ty]) {
                 toast('💦 Coloca o aspersor numa parcela desbloqueada', 'war');
                 return;
             }
@@ -577,12 +706,24 @@ class CenaQuinta extends Phaser.Scene {
 
     updateUI() {
         var tx = this.tLogico.x, ty = this.tLogico.y;
-        var unlock = G.desbloq[tx][ty];
-        var est    = G.plantas[tx][ty];
-        var reg    = G.rega[tx][ty];
+        var inGrid = this.dentroGrid(tx, ty);
+        var unlock = inGrid ? G.desbloq[tx][ty] : false;
+        var est    = inGrid ? G.plantas[tx][ty] : 0;
+        var reg    = inGrid ? G.rega[tx][ty] : false;
         var cul    = CULTURAS[G.sementeAtiva];
         var nomes  = ['🌿 Vazio','🌱 Semente','🌿 Broto','🌾 A crescer','🌳 Maduro','✨ Colher!'];
-        var label  = !unlock ? '🔒 ' + custoExpansao() + '€' : (tx===0&&ty===0 ? '🏪 Stand' : (nomes[Math.min(est,5)] + (reg?' 💧':'')));
+        var label = '';
+        if (!inGrid) {
+            var s = this.posStand();
+            var p = this.posPomar();
+            var a = this.posAnimais();
+            if (tx === s.x && ty === s.y) label = '🛒 Stand';
+            else if (G.pomar && tx === p.x && ty === p.y) label = '🍎 Pomar';
+            else if (G.animais && tx === a.x && ty === a.y) label = '🐄 Animais';
+            else label = '—';
+        } else {
+            label = !unlock ? '🔒 ' + custoExpansao() + '€' : (nomes[Math.min(est,5)] + (reg?' 💧':''));
+        }
         var ev     = G.eventoDia ? G.eventoDia.msg : '';
         var infra  = '💦' + G.aspersores + ' 👨‍🌾' + G.empregados + ' 🏗️' + G.silos;
         var xpN = xpParaNivel(G.nivelQuinta);
@@ -626,7 +767,9 @@ class CenaQuinta extends Phaser.Scene {
         this.updateArado(false);
         this.updateEmpregados();
 
-        this.drawCursor(this.tLogico.x, this.tLogico.y);
+        if (this.dentroGrid(this.tLogico.x, this.tLogico.y)) {
+            this.drawCursor(this.tLogico.x, this.tLogico.y);
+        }
 
         var fill = document.getElementById('growfill');
         if (fill) {
@@ -634,11 +777,38 @@ class CenaQuinta extends Phaser.Scene {
             fill.style.width = Math.min((dec / CICLO_MS) * 100, 100) + '%';
         }
 
+        var stand = this.posStand();
         if (MaquinaEstados.podeConduzir() &&
-            this.tLogico.x === 0 && this.tLogico.y === 0 &&
+            this.tLogico.x === stand.x && this.tLogico.y === stand.y &&
             t > (this._cooldownLojaAte || 0) &&
             Math.abs(this.trCont.x - this.alvoX) < 4) {
             MaquinaEstados.irLoja(this.game);
+            return;
+        }
+
+        if (G.pomar) {
+            var pomar = this.posPomar();
+            if (MaquinaEstados.podeConduzir() &&
+                this.tLogico.x === pomar.x && this.tLogico.y === pomar.y &&
+                Math.abs(this.trCont.x - this.alvoX) < 4) {
+                MaquinaEstados.irPomar(this.game);
+                return;
+            }
+        }
+
+        if (G.animais) {
+            var animais = this.posAnimais();
+            if (MaquinaEstados.podeConduzir() &&
+                this.tLogico.x === animais.x && this.tLogico.y === animais.y &&
+                Math.abs(this.trCont.x - this.alvoX) < 4) {
+                MaquinaEstados.irAnimais(this.game);
+                return;
+            }
+        }
+
+        if (G.pomar && Phaser.Input.Keyboard.JustDown(this.kP)) {
+            toast('🍎 A ir para o pomar...', 'ok', 1200);
+            MaquinaEstados.irPomar(this.game);
             return;
         }
 
@@ -687,12 +857,15 @@ class CenaQuinta extends Phaser.Scene {
             usouArado = this.plantarComArado(true);
         }
 
-        if (!usouArado && this.kSpace.isDown && G.desbloq[tx][ty] && !(tx === 0 && ty === 0)) {
+        if (!usouArado && this.kSpace.isDown && this.dentroGrid(tx, ty) && G.desbloq[tx][ty]) {
             if (G.plantas[tx][ty] === 0) {
                 var culKey = G.sementeAtiva;
                 var c = CULTURAS[culKey];
                 if (c.requerEstufa && !G.estufa) {
                     toast('🏠 Precisas da Estufa na loja!', 'err');
+                } else if (c.requerPomar) {
+                    if (!G.pomar) toast('🍎 Precisas desbloquear o Pomar na loja!', 'err');
+                    else toast('🍎 Esta cultura só pode ser plantada no Pomar (blip à direita)', 'war');
                 } else {
                 var cp = custoPlantio(culKey);
                 if (G.moedas < cp) {
@@ -736,12 +909,15 @@ class CenaQuinta extends Phaser.Scene {
             var ord = ordemSementes();
             var i = ord.indexOf(G.sementeAtiva);
             G.sementeAtiva = ord[(i + 1) % ord.length];
+            if (CULTURAS[G.sementeAtiva] && !CULTURAS[G.sementeAtiva].requerPomar) {
+                G.sementeCampoAtiva = G.sementeAtiva;
+            }
             var c2 = CULTURAS[G.sementeAtiva];
             toast(c2.emoji + ' Semente: ' + c2.nome + ' (' + c2.ganho + '€)', 'ok');
             this.updateUI();
         }
 
-        if (Phaser.Input.Keyboard.JustDown(this.kU) && G.desbloq[tx][ty]) {
+        if (Phaser.Input.Keyboard.JustDown(this.kU) && this.dentroGrid(tx, ty) && G.desbloq[tx][ty]) {
             if (G.aduboRestante <= 0) toast('🧪 Sem adubo! Passa o dia [N]', 'err');
             else if (G.plantas[tx][ty] === 0) toast('🧪 Planta primeiro', 'war');
             else if (G.plantas[tx][ty] >= 5) toast('🧪 Já está pronto para colher', 'war');
@@ -755,7 +931,7 @@ class CenaQuinta extends Phaser.Scene {
             }
         }
 
-        if (Phaser.Input.Keyboard.JustDown(this.kR) && G.desbloq[tx][ty]) {
+        if (Phaser.Input.Keyboard.JustDown(this.kR) && this.dentroGrid(tx, ty) && G.desbloq[tx][ty]) {
             if (G.regaRestante <= 0)       toast('💧 Sem água! Usa [N] para passar o dia', 'err');
             else if (G.plantas[tx][ty]===0) toast('🤔 Nada para regar', 'war');
             else if (G.rega[tx][ty])        toast('💧 Já está regado!', 'war');
@@ -767,7 +943,11 @@ class CenaQuinta extends Phaser.Scene {
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.kE)) {
-            if (G.desbloq[tx][ty])           toast('✅ Já desbloqueado', 'war');
+            if (!this.dentroGrid(tx, ty)) {
+                toast('🤔 Aqui não dá para expandir', 'war');
+            } else if (G.desbloq[tx][ty]) {
+                toast('✅ Já desbloqueado', 'war');
+            }
             else {
                 var ce = custoExpansao();
                 if (G.moedas < ce) toast('❌ Precisas de ' + ce + '€', 'err');
@@ -807,19 +987,21 @@ class CenaQuinta extends Phaser.Scene {
         if (t < this._proximoMov) return;
         var mov = false;
         var k = this.keys;
-        if ((this.kW.isDown || k.up.isDown) && ty > 0) {
-            this.tLogico.y--; this.tDirecao = { x: 0, y: -1 }; mov = true;
-        } else if ((this.kS.isDown || k.down.isDown) && ty < ROWS - 1) {
-            this.tLogico.y++; this.tDirecao = { x: 0, y: 1 }; mov = true;
-        }
-        if ((this.kA.isDown || k.left.isDown) && tx > 0) {
-            this.tLogico.x--; this.tDirecao = { x: -1, y: 0 }; this.trCont.setScale(-1,1); mov = true;
-        } else if ((this.kD.isDown || k.right.isDown) && tx < COLS - 1) {
-            this.tLogico.x++; this.tDirecao = { x: 1, y: 0 }; this.trCont.setScale(1,1);  mov = true;
+
+        var nx = tx, ny = ty;
+        if ((this.kW.isDown || k.up.isDown)) { ny = ty - 1; this.tDirecao = { x: 0, y: -1 }; }
+        else if ((this.kS.isDown || k.down.isDown)) { ny = ty + 1; this.tDirecao = { x: 0, y: 1 }; }
+        if ((this.kA.isDown || k.left.isDown)) { nx = tx - 1; this.tDirecao = { x: -1, y: 0 }; this.trCont.setScale(-1,1); }
+        else if ((this.kD.isDown || k.right.isDown)) { nx = tx + 1; this.tDirecao = { x: 1, y: 0 }; this.trCont.setScale(1,1);  }
+
+        if ((nx !== tx || ny !== ty) && (this.dentroGrid(nx, ny) || this.ehTileAcesso(nx, ny))) {
+            this.tLogico.x = nx;
+            this.tLogico.y = ny;
+            mov = true;
         }
 
         if (mov) {
-            var h2 = this.terreno[this.tLogico.x][this.tLogico.y];
+            var h2 = this.dentroGrid(this.tLogico.x, this.tLogico.y) ? this.terreno[this.tLogico.x][this.tLogico.y] : 0;
             var p2 = this.iso(this.tLogico.x, this.tLogico.y);
             this.alvoX = p2.x; this.alvoY = p2.y - h2;
             this.updateArado(false);

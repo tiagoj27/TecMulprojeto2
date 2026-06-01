@@ -25,9 +25,13 @@ var CULTURAS = {
     // --- Novas Culturas (Avançadas e Árvores) ---
     abóbora:  { emoji: '🎃', nome: 'Abóbora',  ganho: 450, custoPlantio: 130, extraCiclo: 0, fruto: 0xea580c }, // Demora mas lucra muito
     cereja:   { emoji: '🍒', nome: 'Cereja',   ganho: 600, custoPlantio: 200, extraCiclo: 4, fruto: 0x991b1b, requerPomar: true }, // Requisito especial
+    maca:     { emoji: '🍎', nome: 'Maçã',     ganho: 520, custoPlantio: 170, extraCiclo: 3, fruto: 0xef4444, requerPomar: true },
+    laranja:  { emoji: '🍊', nome: 'Laranja',  ganho: 560, custoPlantio: 185, extraCiclo: 3, fruto: 0xf97316, requerPomar: true },
+    pera:     { emoji: '🍐', nome: 'Pêra',     ganho: 480, custoPlantio: 160, extraCiclo: 3, fruto: 0x84cc16, requerPomar: true },
 
     // --- Nova Cultura Rara / Mística ---
     cogumelo: { emoji: '🍄', nome: 'Cogumelo Cósmico', ganho: 1200, custoPlantio: 400, extraCiclo: 0, fruto: 0x8b5cf6, requerEstufa: true }
 };
 
 var ORDEM_SEMENTES_BASE = ['girassol', 'milho', 'morango'];
+var ORDEM_SEMENTES_POMAR = ['cereja', 'maca', 'laranja', 'pera'];

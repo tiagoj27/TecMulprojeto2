@@ -11,7 +11,10 @@ var G = {
     nivelQuinta: 1, xpQuinta: 0,
     galinheiro: 0, irradiadores: 0, exportador: false,
     contrato: null, conquistas: null,
-    arado: false, aradoAcoplado: false, ampliacoesTerreno: 0
+    arado: false, aradoAcoplado: false, ampliacoesTerreno: 0,
+    pomar: false, pomarPlantas: null, pomarTipo: null, pomarRega: null,
+    animais: true, animaisData: null
+    , sementeCampoAtiva: 'girassol', sementePomarAtiva: 'cereja'
 };
 
 var LOJA_CATALOGO = [
@@ -62,7 +65,10 @@ var LOJA_CATALOGO = [
       aplicar: function() {
           if (!G.eliteSem) G.eliteSem = {};
           G.eliteSem[G.sementeAtiva] = true;
-      } }
+      } },
+    { id: 'pomar', emoji: '🍎', nome: 'Pomar', max: 1, custoBase: 9000, mult: 1,
+      desc: 'Desbloqueia o pomar (árvores e culturas grandes)', requer: function() { return !G.pomar && terrenoTodoDesbloqueado(); },
+      aplicar: function() { G.pomar = true; } }
 ];
 
 function velocidadeTratorNivel(nivel) {
@@ -74,7 +80,12 @@ function velocidadeTratorNivel(nivel) {
 function ordemSementes() {
     var o = ORDEM_SEMENTES_BASE.slice();
     if (G.estufa) o.push('lavanda');
+    if (G.pomar && ORDEM_SEMENTES_POMAR) o = o.concat(ORDEM_SEMENTES_POMAR);
     return o;
+}
+
+function ordemSementesPomar() {
+    return (ORDEM_SEMENTES_POMAR || []).slice();
 }
 
 function custoExpansao() {
@@ -114,6 +125,16 @@ function desbloquearTerreno(qtd) {
     }
     G.expansoes += total;
     return total;
+}
+
+function terrenoTodoDesbloqueado() {
+    if (!G.desbloq) return false;
+    for (var x = 0; x < COLS; x++) {
+        for (var y = 0; y < ROWS; y++) {
+            if (!G.desbloq[x] || !G.desbloq[x][y]) return false;
+        }
+    }
+    return true;
 }
 
 var POS_ASPERSORES = [[1,1], [3,1], [1,3], [3,3], [2,2], [4,4]];
@@ -345,6 +366,7 @@ function nivelLoja(id) {
     if (id === 'irradiador') return G.irradiadores;
     if (id === 'exportador') return G.exportador ? 1 : 0;
     if (id === 'elite') return G.eliteSem && G.eliteSem[G.sementeAtiva] ? 1 : 0;
+    if (id === 'pomar') return G.pomar ? 1 : 0;
     return 0;
 }
 
@@ -466,7 +488,9 @@ function guardarJogo() {
             totalGasto: G.totalGasto, nivelQuinta: G.nivelQuinta, xpQuinta: G.xpQuinta,
             galinheiro: G.galinheiro, irradiadores: G.irradiadores, exportador: G.exportador,
             contrato: G.contrato, conquistas: G.conquistas, _contratosFeitos: G._contratosFeitos,
-            arado: G.arado, aradoAcoplado: G.aradoAcoplado, ampliacoesTerreno: G.ampliacoesTerreno
+            arado: G.arado, aradoAcoplado: G.aradoAcoplado, ampliacoesTerreno: G.ampliacoesTerreno,
+            pomar: G.pomar, pomarPlantas: G.pomarPlantas, pomarTipo: G.pomarTipo, pomarRega: G.pomarRega
+            , sementeCampoAtiva: G.sementeCampoAtiva, sementePomarAtiva: G.sementePomarAtiva
         }));
     } catch (e) {}
 }
@@ -499,6 +523,12 @@ function prepararEstadoJogo() {
     G.arado = !!G.arado;
     G.aradoAcoplado = !!(G.arado && G.aradoAcoplado);
     G.ampliacoesTerreno = G.ampliacoesTerreno || 0;
+    G.pomar = !!G.pomar;
+    if (!G.pomarPlantas) G.pomarPlantas = null;
+    if (!G.pomarTipo) G.pomarTipo = null;
+    if (!G.pomarRega) G.pomarRega = null;
+    if (!G.sementeCampoAtiva) G.sementeCampoAtiva = 'girassol';
+    if (!G.sementePomarAtiva) G.sementePomarAtiva = 'cereja';
     G.velTrator = velocidadeTratorNivel(G.nivelTrator || 1);
     G.nivelQuinta = G.nivelQuinta || 1;
     G.xpQuinta = G.xpQuinta || 0;

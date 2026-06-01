@@ -38,7 +38,8 @@ Tecmul2/
 | U | Adubo | — |
 | E | Expandir parcela | — |
 | N | Dia seguinte | — |
-| 0,0 | Entrar no Stand | — |
+| P | Ir para o Pomar (se desbloqueado) | — |
+| -1,0 | Entrar no Stand (tile fora do grid) | — |
 | 1–9 | — | Comprar item |
 | ESC / V | — | Sair |
 | ◀ SAIR | — | Sair (clique) |
