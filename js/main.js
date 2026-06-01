@@ -6,6 +6,6 @@ window.addEventListener('load', function() {
         height: 750,
         backgroundColor: '#060d1a',
         parent: 'game-wrapper',
-        scene: [CenaQuinta, CenaPomar, CenaAnimais, CenaLoja]
+        scene: [TelaInicio, CenaQuinta, CenaPomar, CenaAnimais, CenaLoja]
     });
 });
