@@ -1,4 +1,6 @@
 window.addEventListener('load', function() {
+    if (window.AudioJogo) AudioJogo.bindUnlock();
+    if (window.IdiomasJogo) IdiomasJogo.atualizarDom();
     MaquinaEstados.mudar(Estado.CAMPO);
     new Phaser.Game({
         type: Phaser.CANVAS,

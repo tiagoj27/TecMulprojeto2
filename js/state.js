@@ -265,6 +265,7 @@ function verificarConquistas() {
         if (feito) {
             c.ok = true;
             G.moedas += c.premio;
+            if (window.AudioJogo) AudioJogo.sfx('harvest');
             toast('🏆 ' + c.desc + ' (+' + c.premio + '€)', 'ok', 4000);
         }
     });
@@ -293,6 +294,7 @@ function progContrato(ev, extra) {
         c.feito = true;
         G.moedas += c.premio;
         G._contratosFeitos = (G._contratosFeitos || 0) + 1;
+        if (window.AudioJogo) AudioJogo.sfx('harvest');
         toast('📋 Contrato cumprido! (+' + c.premio + '€)', 'ok', 4000);
         verificarConquistas();
     }
@@ -317,6 +319,7 @@ function progMissao(id, n) {
         if (m.prog >= m.alvo) {
             m.feita = true;
             G.moedas += m.premio;
+            if (window.AudioJogo) AudioJogo.sfx('harvest');
             toast('🎯 Missão: ' + m.desc + ' (+' + m.premio + '€)', 'ok', 4000);
         }
     });
@@ -388,11 +391,11 @@ function comprarLojaItem(id) {
     var it = null;
     LOJA_CATALOGO.forEach(function(x) { if (x.id === id) it = x; });
     if (!it) return false;
-    if (nivelLoja(id) >= it.max) { toast('✅ Já no máximo!', 'war'); return false; }
-    if (it.requer && !it.requer()) { toast('🔒 Requisito em falta', 'err'); return false; }
+    if (nivelLoja(id) >= it.max) { toast('✅ ' + (window.IdiomasJogo ? IdiomasJogo.msg('jaMaximo', 'Já no máximo!') : 'Já no máximo!'), 'war'); return false; }
+    if (it.requer && !it.requer()) { toast('🔒 ' + (window.IdiomasJogo ? IdiomasJogo.msg('requisitoFalta', 'Requisito em falta') : 'Requisito em falta'), 'err'); return false; }
     var custo = custoLojaItem(it);
     if (G.moedas < custo) {
-        toast('❌ Precisas de ' + custo + '€ (tens ' + G.moedas + '€)', 'err');
+        toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('precisasValor', 'Precisas de {valor}€', { valor: custo }) : 'Precisas de ' + custo + '€') + ' (' + G.moedas + '€)', 'err');
         return false;
     }
     G.moedas -= custo;
@@ -403,7 +406,10 @@ function comprarLojaItem(id) {
     progMissao('riqueza', 0);
     verificarConquistas();
     guardarJogo();
-    toast(it.emoji + ' ' + it.nome + ' comprado! (-' + custo + '€)', 'ok', 3000);
+    if (window.AudioJogo) AudioJogo.sfx('buy');
+    var nomeItem = window.IdiomasJogo ? IdiomasJogo.itemLoja(it.id, 'nome', it.nome) : it.nome;
+    var msgCompra = window.IdiomasJogo ? IdiomasJogo.msg('itemComprado', '{nome} comprado! (-{valor}€)', { nome: nomeItem, valor: custo }) : nomeItem + ' comprado! (-' + custo + '€)';
+    toast(it.emoji + ' ' + msgCompra, 'ok', 3000);
     return true;
 }
 

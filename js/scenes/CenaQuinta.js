@@ -168,13 +168,13 @@ class CenaQuinta extends Phaser.Scene {
         this.tileStand = this.criarTileAcesso({
             gx: standPos.x,
             gy: standPos.y,
-            label: '🛒 STAND',
+            label: '🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('stand').toUpperCase() : 'STAND'),
             fill: 0x0b2a35,
             line: 0x22d3ee,
             pulse: true
         });
         this.tileStand.zone.on('pointerdown', () => {
-            toast('🛒 A entrar no stand...', 'ok', 1200);
+            toast('🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('entrarStand') : 'A entrar no stand...'), 'ok', 1200);
             MaquinaEstados.irLoja(this.game);
         });
 
@@ -184,13 +184,13 @@ class CenaQuinta extends Phaser.Scene {
             this.tilePomar = this.criarTileAcesso({
                 gx: pomarPos.x,
                 gy: pomarPos.y,
-                label: '🍎 POMAR',
+                label: '🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('pomar').toUpperCase() : 'POMAR'),
                 fill: 0x14532d,
                 line: 0x4ade80,
                 pulse: true
             });
             this.tilePomar.zone.on('pointerdown', () => {
-                toast('🍎 A ir para o pomar...', 'ok', 1200);
+                toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('irPomar') : 'A ir para o pomar...'), 'ok', 1200);
                 MaquinaEstados.irPomar(this.game);
             });
         }
@@ -201,13 +201,13 @@ class CenaQuinta extends Phaser.Scene {
             this.tileAnimais = this.criarTileAcesso({
                 gx: animaisPos.x,
                 gy: animaisPos.y,
-                label: '🐄 ANIMAIS',
+                label: '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('animais').toUpperCase() : 'ANIMAIS'),
                 fill: 0x3f1d0b,
                 line: 0xfbbf24,
                 pulse: true
             });
             this.tileAnimais.zone.on('pointerdown', () => {
-                toast('🐄 A ir para os animais...', 'ok', 1200);
+                toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('irAnimais') : 'A ir para os animais...'), 'ok', 1200);
                 MaquinaEstados.irAnimais(this.game);
             });
         }
@@ -247,12 +247,12 @@ class CenaQuinta extends Phaser.Scene {
         ct.fillRoundedRect(10, 130, 285, 175, 10);
         ct.strokeRoundedRect(10, 130, 285, 175, 10);
         this.add.text(20, 140, [
-            '   ⌨  CONTROLOS',
+            '   ⌨  ' + (window.IdiomasJogo ? IdiomasJogo.t('controles') : 'CONTROLOS'),
             '─────────────────────────',
-            '  [WASD]  Mover trator',
-            '  [ESPAÇO]  Semear / Colher / arar',
-            '  [Q] Semente  [C] Arado  [M] Mover aspersor',
-            '  [U] Adubo  [E] Expandir  [N] Dia seguinte',
+            '  [WASD]  ' + (window.IdiomasJogo ? IdiomasJogo.t('moverTrator') : 'Mover trator'),
+            '  [ESPAÇO]  ' + (window.IdiomasJogo ? IdiomasJogo.t('semearColherArar') : 'Semear / Colher / arar'),
+            '  [Q] ' + (window.IdiomasJogo ? IdiomasJogo.t('semente') : 'Semente') + '  [C] ' + (window.IdiomasJogo ? IdiomasJogo.t('arado') : 'Arado') + '  [M] ' + (window.IdiomasJogo ? IdiomasJogo.t('moverAspersor') : 'Mover aspersor'),
+            '  [U] ' + (window.IdiomasJogo ? IdiomasJogo.t('adubo') : 'Adubo') + '  [E] ' + (window.IdiomasJogo ? IdiomasJogo.t('expandir') : 'Expandir') + '  [N] ' + (window.IdiomasJogo ? IdiomasJogo.t('diaSeguinte') : 'Dia seguinte'),
         ].join('\n'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
             color: '#475569', lineSpacing: 5
@@ -603,13 +603,13 @@ class CenaQuinta extends Phaser.Scene {
         var culKey = G.sementeAtiva;
         var c = CULTURAS[culKey];
         if (c.requerEstufa && !G.estufa) {
-            if (!silencioso) toast('🏠 Precisas da Estufa na loja!', 'err');
+            if (!silencioso) toast('🏠 ' + (window.IdiomasJogo ? IdiomasJogo.msg('precisaEstufa', 'Precisas da Estufa na loja!') : 'Precisas da Estufa na loja!'), 'err');
             return true;
         }
         if (c.requerPomar) {
             if (!silencioso) {
-                if (!G.pomar) toast('🍎 Precisas desbloquear o Pomar na loja!', 'err');
-                else toast('🍎 Esta cultura só pode ser plantada no Pomar (blip à direita)', 'war');
+                if (!G.pomar) toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.msg('precisaPomar', 'Precisas desbloquear o Pomar na loja!') : 'Precisas desbloquear o Pomar na loja!'), 'err');
+                else toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.msg('culturaSoPomar', 'Esta cultura só pode ser plantada no Pomar') : 'Esta cultura só pode ser plantada no Pomar'), 'war');
             }
             return true;
         }
@@ -651,14 +651,22 @@ class CenaQuinta extends Phaser.Scene {
             if (mudouTile) this.drawTile(p.x, p.y);
         }
         if (!alterou) {
-            if (!silencioso && G.moedas < cp) toast('❌ Sementes custam ' + cp + '€ cada', 'err');
+            if (!silencioso && G.moedas < cp) toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('sementesCustam', 'Sementes custam {valor}€', { valor: cp }) : 'Sementes custam ' + cp + '€'), 'err');
             return true;
         }
         progMissao('riqueza', 0);
         verificarConquistas();
         this.updateUI();
         guardarJogo();
+        if (silencioso && window.AudioJogo) {
+            var agora = this.time ? this.time.now : Date.now();
+            if (!this._ultimoSomArado || agora - this._ultimoSomArado > 260) {
+                AudioJogo.sfx(colhidas ? 'harvest' : 'plant');
+                this._ultimoSomArado = agora;
+            }
+        }
         if (!silencioso) {
+            if (window.AudioJogo) AudioJogo.sfx(colhidas ? 'harvest' : 'plant');
             toast('⛏️ Arado: +' + ganhoTotal + '€ / ' + plantadas + ' semeadas', colhidas ? 'ok' : 'war');
         }
         return true;
@@ -691,6 +699,7 @@ class CenaQuinta extends Phaser.Scene {
             this.redesenharCampo();
             this.updateUI();
             guardarJogo();
+            if (window.AudioJogo) AudioJogo.sfx('water');
             toast('💦 Aspersor colocado: rega 3×3 à volta', 'ok');
             return;
         }
@@ -704,25 +713,27 @@ class CenaQuinta extends Phaser.Scene {
         G.aspersorEmMovimento = idx;
         this.redesenharCampo();
         this.updateUI();
+        if (window.AudioJogo) AudioJogo.sfx('click');
         toast('💦 Aspersor na mão. Vai ao novo sítio e carrega [M]', 'ok');
     }
 
     updateUI() {
+        var tr = window.IdiomasJogo || { t: function(k) { return k; } };
         var tx = this.tLogico.x, ty = this.tLogico.y;
         var inGrid = this.dentroGrid(tx, ty);
         var unlock = inGrid ? G.desbloq[tx][ty] : false;
         var est    = inGrid ? G.plantas[tx][ty] : 0;
         var reg    = inGrid ? G.rega[tx][ty] : false;
         var cul    = CULTURAS[G.sementeAtiva];
-        var nomes  = ['🌿 Vazio','🌱 Semente','🌿 Broto','🌾 A crescer','🌳 Maduro','✨ Colher!'];
+        var nomes  = ['🌿 ' + tr.t('vazio'), '🌱 ' + tr.t('semente'), '🌿 ' + tr.t('broto'), '🌾 ' + tr.t('crescendo'), '🌳 ' + tr.t('maduro'), '✨ ' + tr.t('colher')];
         var label = '';
         if (!inGrid) {
             var s = this.posStand();
             var p = this.posPomar();
             var a = this.posAnimais();
-            if (tx === s.x && ty === s.y) label = '🛒 Stand';
-            else if (G.pomar && tx === p.x && ty === p.y) label = '🍎 Pomar';
-            else if (G.animais && tx === a.x && ty === a.y) label = '🐄 Animais';
+            if (tx === s.x && ty === s.y) label = '🛒 ' + tr.t('stand');
+            else if (G.pomar && tx === p.x && ty === p.y) label = '🍎 ' + tr.t('pomar');
+            else if (G.animais && tx === a.x && ty === a.y) label = '🐄 ' + tr.t('animais');
             else label = '—';
         } else {
             label = !unlock ? '🔒 ' + custoExpansao() + '€' : (nomes[Math.min(est,5)] + (reg?' 💧':''));
@@ -731,20 +742,21 @@ class CenaQuinta extends Phaser.Scene {
         var infra  = '💦' + G.aspersores + ' 👨‍🌾' + G.empregados + ' 🏗️' + G.silos;
         var xpN = xpParaNivel(G.nivelQuinta);
         this.txtUI.setText([
-            '   💰 ' + G.moedas + '€   📅 Dia ' + G.dia + (G.combo > 1 ? '  🔥x' + G.combo : ''),
-            '   ⭐ Quinta nv.' + G.nivelQuinta + '  XP ' + G.xpQuinta + '/' + xpN,
+            '   💰 ' + G.moedas + '€   📅 ' + tr.t('dia') + ' ' + G.dia + (G.combo > 1 ? '  🔥x' + G.combo : ''),
+            '   ⭐ ' + tr.t('nivelQuinta') + G.nivelQuinta + '  XP ' + G.xpQuinta + '/' + xpN,
             '   🚜 Nv.' + G.nivelTrator + '  🌾' + G.colheitas + '  🧪' + G.aduboRestante,
             '   📍 [' + tx + ',' + ty + '] ' + label,
-            '   ' + cul.emoji + ' plantar ' + custoPlantio(G.sementeAtiva) + '€ → ~' + cul.ganho + '€' +
+            '   ' + cul.emoji + ' ' + tr.t('plantar') + ' ' + custoPlantio(G.sementeAtiva) + '€ → ~' + cul.ganho + '€' +
                 (G.arado ? '  ⛏️' + (G.aradoAcoplado ? 'ON' : 'OFF') : '') +
                 (this.aspersorNaMao !== undefined && this.aspersorNaMao !== null ? '  💦MOVER' : ''),
         ].join('\n'));
         if (this.txtMissoes && G.missoes) {
             this.txtMissoes.setText(
-                '   🎯 MISSÕES\n' +
+                '   🎯 ' + tr.t('missoes') + '\n' +
                 G.missoes.map(function(m) {
                     var p = m.id === 'riqueza' ? G.moedas : (m.id === 'gastar' ? (G.totalGasto || 0) : m.prog);
-                    return (m.feita ? '   ✅ ' : '   ○ ') + m.desc + ' ' + Math.min(p, m.alvo) + '/' + m.alvo;
+                    var desc = tr.missaoDesc ? tr.missaoDesc(m) : m.desc;
+                    return (m.feita ? '   ✅ ' : '   ○ ') + desc + ' ' + Math.min(p, m.alvo) + '/' + m.alvo;
                 }).join('\n')
             );
         }
@@ -752,10 +764,10 @@ class CenaQuinta extends Phaser.Scene {
             var c = G.contrato;
             var conquistasOk = (G.conquistas || []).filter(function(x) { return x.ok; }).length;
             this.txtContrato.setText([
-                '   📋 CONTRATO' + (c.feito ? ' ✅' : ''),
-                '   ' + c.desc,
-                '   ' + (c.feito ? 'Concluído!' : 'Progresso: ' + c.prog + '/' + c.alvo + ' → ' + c.premio + '€'),
-                '   🏆 Conquistas: ' + conquistasOk + '/' + (G.conquistas ? G.conquistas.length : 0),
+                '   📋 ' + tr.t('contrato') + (c.feito ? ' ✅' : ''),
+                '   ' + (tr.contratoDesc ? tr.contratoDesc(c) : c.desc),
+                '   ' + (c.feito ? tr.t('concluido') : tr.t('progresso') + ': ' + c.prog + '/' + c.alvo + ' → ' + c.premio + '€'),
+                '   🏆 ' + tr.t('conquistas') + ': ' + conquistasOk + '/' + (G.conquistas ? G.conquistas.length : 0),
             ].join('\n'));
         }
     }
@@ -821,7 +833,7 @@ class CenaQuinta extends Phaser.Scene {
         }
 
         if (G.pomar && Phaser.Input.Keyboard.JustDown(this.kP)) {
-            toast('🍎 A ir para o pomar...', 'ok', 1200);
+            toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('irPomar') : 'A ir para o pomar...'), 'ok', 1200);
             MaquinaEstados.irPomar(this.game);
             return;
         }
@@ -876,19 +888,20 @@ class CenaQuinta extends Phaser.Scene {
                 var culKey = G.sementeAtiva;
                 var c = CULTURAS[culKey];
                 if (c.requerEstufa && !G.estufa) {
-                    toast('🏠 Precisas da Estufa na loja!', 'err');
+                    toast('🏠 ' + (window.IdiomasJogo ? IdiomasJogo.msg('precisaEstufa', 'Precisas da Estufa na loja!') : 'Precisas da Estufa na loja!'), 'err');
                 } else if (c.requerPomar) {
-                    if (!G.pomar) toast('🍎 Precisas desbloquear o Pomar na loja!', 'err');
-                    else toast('🍎 Esta cultura só pode ser plantada no Pomar (blip à direita)', 'war');
+                    if (!G.pomar) toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.msg('precisaPomar', 'Precisas desbloquear o Pomar na loja!') : 'Precisas desbloquear o Pomar na loja!'), 'err');
+                    else toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.msg('culturaSoPomar', 'Esta cultura só pode ser plantada no Pomar') : 'Esta cultura só pode ser plantada no Pomar'), 'war');
                 } else {
                 var cp = custoPlantio(culKey);
                 if (G.moedas < cp) {
-                    toast('❌ Sementes custam ' + cp + '€', 'err');
+                    toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('sementesCustam', 'Sementes custam {valor}€', { valor: cp }) : 'Sementes custam ' + cp + '€'), 'err');
                 } else {
                 G.moedas -= cp;
                 G.plantas[tx][ty] = 1;
                 G.tipo[tx][ty] = culKey;
                 this.drawTile(tx, ty);
+                if (window.AudioJogo) AudioJogo.sfx('plant');
                 toast(c.emoji + ' ' + c.nome + ' (-' + cp + '€)', 'ok');
                 guardarJogo();
                 }
@@ -914,6 +927,7 @@ class CenaQuinta extends Phaser.Scene {
                 this.updateUI();
                 var pp = this.iso(tx, ty);
                 coinPop(this.game.canvas, pp.x, pp.y - this.terreno[tx][ty] - 30, ganho);
+                if (window.AudioJogo) AudioJogo.sfx('harvest');
                 if (G.combo >= 3) toast('🔥 Combo x' + G.combo + '!', 'war', 1200);
                 guardarJogo();
             }
@@ -927,7 +941,8 @@ class CenaQuinta extends Phaser.Scene {
                 G.sementeCampoAtiva = G.sementeAtiva;
             }
             var c2 = CULTURAS[G.sementeAtiva];
-            toast(c2.emoji + ' Semente: ' + c2.nome + ' (' + c2.ganho + '€)', 'ok');
+            if (window.AudioJogo) AudioJogo.sfx('click');
+            toast(c2.emoji + ' ' + (window.IdiomasJogo ? IdiomasJogo.msg('sementeAtual', 'Semente: {nome} ({valor}€', { nome: c2.nome, valor: c2.ganho }) : 'Semente: ' + c2.nome + ' (' + c2.ganho + '€)'), 'ok');
             this.updateUI();
         }
 
@@ -940,31 +955,33 @@ class CenaQuinta extends Phaser.Scene {
                 G.plantas[tx][ty] = Math.min(G.plantas[tx][ty] + 2, 5);
                 this.drawTile(tx, ty);
                 this.updateUI();
+                if (window.AudioJogo) AudioJogo.sfx('fertilizer');
                 toast('🧪 Adubo aplicado — cresceu mais!', 'ok');
                 guardarJogo();
             }
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.kR) && this.dentroGrid(tx, ty) && G.desbloq[tx][ty]) {
-            if (G.regaRestante <= 0)       toast('💧 Sem água! Usa [N] para passar o dia', 'err');
-            else if (G.plantas[tx][ty]===0) toast('🤔 Nada para regar', 'war');
-            else if (G.rega[tx][ty])        toast('💧 Já está regado!', 'war');
+            if (G.regaRestante <= 0)       toast('💧 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semAgua', 'Sem água! Usa [N] para passar o dia') : 'Sem água! Usa [N] para passar o dia'), 'err');
+            else if (G.plantas[tx][ty]===0) toast('🤔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('nadaRegar', 'Nada para regar') : 'Nada para regar'), 'war');
+            else if (G.rega[tx][ty])        toast('💧 ' + (window.IdiomasJogo ? IdiomasJogo.msg('jaRegado', 'Já está regado!') : 'Já está regado!'), 'war');
             else {
                 G.rega[tx][ty] = true; G.regaRestante--;
                 this.drawTile(tx, ty); this.updateUI();
-                toast('💧 Regado! Cresce mais rápido.', 'ok');
+                if (window.AudioJogo) AudioJogo.sfx('water');
+                toast('💧 ' + (window.IdiomasJogo ? IdiomasJogo.msg('regadoOk', 'Regado! Cresce mais rápido.') : 'Regado! Cresce mais rápido.'), 'ok');
             }
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.kE)) {
             if (!this.dentroGrid(tx, ty)) {
-                toast('🤔 Aqui não dá para expandir', 'war');
+                toast('🤔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('aquiNaoExpande', 'Aqui não dá para expandir') : 'Aqui não dá para expandir'), 'war');
             } else if (G.desbloq[tx][ty]) {
-                toast('✅ Já desbloqueado', 'war');
+                toast('✅ ' + (window.IdiomasJogo ? IdiomasJogo.msg('jaDesbloqueado', 'Já desbloqueado') : 'Já desbloqueado'), 'war');
             }
             else {
                 var ce = custoExpansao();
-                if (G.moedas < ce) toast('❌ Precisas de ' + ce + '€', 'err');
+                if (G.moedas < ce) toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('precisasValor', 'Precisas de {valor}€', { valor: ce }) : 'Precisas de ' + ce + '€'), 'err');
                 else {
                 G.moedas -= ce; G.totalGasto = (G.totalGasto || 0) + ce;
                 G.desbloq[tx][ty] = true; G.plantas[tx][ty] = 0;
@@ -972,7 +989,8 @@ class CenaQuinta extends Phaser.Scene {
                 G.expansoes++; progMissao('expandir', 1); progMissao('riqueza', 0); progMissao('gastar', ce);
                 progContrato('expandir', 1);
                 this.drawTile(tx, ty); this.updateUI();
-                toast('🗺 Expandido! (-' + ce + '€)', 'ok');
+                if (window.AudioJogo) AudioJogo.sfx('buy');
+                toast('🗺 ' + (window.IdiomasJogo ? IdiomasJogo.msg('expandido', 'Expandido! (-{valor}€)', { valor: ce }) : 'Expandido! (-' + ce + '€)'), 'ok');
                 guardarJogo();
                 }
             }
@@ -991,10 +1009,11 @@ class CenaQuinta extends Phaser.Scene {
             G.moedas -= imposto + racao;
             G.moedas += rendimento;
             this.updateUI();
-            toast('📅 Dia ' + G.dia + ' — ' + G.eventoDia.msg, 'ok', 2800);
-            if (imposto > 0) setTimeout(function() { toast('🏛️ Impostos: -' + imposto + '€', 'war', 2500); }, 400);
-            if (racao > 0) setTimeout(function() { toast('🐔 Ração: -' + racao + '€', 'war', 2500); }, 700);
-            if (rendimento > 0) setTimeout(function() { toast('💼 Rendimento: +' + rendimento + '€', 'ok', 2500); }, 1000);
+            if (window.AudioJogo) AudioJogo.sfx('day');
+            toast('📅 ' + (window.IdiomasJogo ? IdiomasJogo.msg('diaResumo', 'Dia {dia} — {evento}', { dia: G.dia, evento: G.eventoDia.msg }) : 'Dia ' + G.dia + ' — ' + G.eventoDia.msg), 'ok', 2800);
+            if (imposto > 0) setTimeout(function() { toast('🏛️ ' + (window.IdiomasJogo ? IdiomasJogo.msg('impostos', 'Impostos: -{valor}€', { valor: imposto }) : 'Impostos: -' + imposto + '€'), 'war', 2500); }, 400);
+            if (racao > 0) setTimeout(function() { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('racao', 'Ração: -{valor}€', { valor: racao }) : 'Ração: -' + racao + '€'), 'war', 2500); }, 700);
+            if (rendimento > 0) setTimeout(function() { toast('💼 ' + (window.IdiomasJogo ? IdiomasJogo.msg('rendimento', 'Rendimento: +{valor}€', { valor: rendimento }) : 'Rendimento: +' + rendimento + '€'), 'ok', 2500); }, 1000);
             guardarJogo();
         }
 
@@ -1021,6 +1040,7 @@ class CenaQuinta extends Phaser.Scene {
             this.updateArado(false);
             this._proximoMov = t + G.velTrator;
             this.updateUI();
+            if (window.AudioJogo) AudioJogo.sfx('move');
         }
     }
 }

@@ -90,18 +90,19 @@ class CenaAnimais extends Phaser.Scene {
     }
 
     updateHUD() {
+        var tr = window.IdiomasJogo || { t: function(k) { return k; } };
         var a = G.animaisData;
         var fr = [
-            '🐔 Galinhas: ' + a.galinhas.qtd + '  Alimentadas: ' + a.galinhas.fed + '/' + a.galinhas.qtd,
-            '   Ovos prontos: ' + a.galinhas.pronto,
-            '🐄 Vacas: ' + a.vacas.qtd + '  Alimentadas: ' + a.vacas.fed + '/' + a.vacas.qtd,
-            '   Leite pronto: ' + a.vacas.pronto
+            '🐔 ' + tr.t('galinhas') + ': ' + a.galinhas.qtd + '  ' + tr.t('alimentadas') + ': ' + a.galinhas.fed + '/' + a.galinhas.qtd,
+            '   ' + tr.t('ovosProntos') + ': ' + a.galinhas.pronto,
+            '🐄 ' + tr.t('vacas') + ': ' + a.vacas.qtd + '  ' + tr.t('alimentadas') + ': ' + a.vacas.fed + '/' + a.vacas.qtd,
+            '   ' + tr.t('leitePronto') + ': ' + a.vacas.pronto
         ].join('\n');
         this.txtHUD.setText(
-            '🐄 Animais\n' +
+            '🐄 ' + tr.t('animais') + '\n' +
             '💰 ' + G.moedas + '€\n' +
             fr + '\n' +
-            '[ESPAÇO] alimentar  ·  [R] recolher'
+            tr.t('animaisHint')
         );
     }
 
@@ -192,20 +193,20 @@ class CenaAnimais extends Phaser.Scene {
         bg.lineStyle(2, 0xfbbf24, 0.6);
         bg.beginPath(); bg.moveTo(630, 150); bg.lineTo(950, 150); bg.strokePath();
 
-        var title = this.add.text(790, 130, '🛒 LOJA DOS ANIMAIS', {
+        var title = this.add.text(790, 130, '🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimais') : 'LOJA DOS ANIMAIS'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '15px',
             fontStyle: '900',
             color: '#f8fafc'
         }).setOrigin(0.5);
 
-        var info = this.add.text(630, 164, 'Clique para comprar. A produção só acontece se alimentares.', {
+        var info = this.add.text(630, 164, (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimaisInfo') : 'Clique para comprar. A produção só acontece se alimentares.'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '11px',
             color: '#64748b'
         });
 
-        var btn1 = this.add.text(630, 210, '🐔 +1 Galinha — 250€', {
+        var btn1 = this.add.text(630, 210, '🐔 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarGalinha') : '+1 Galinha — 250€'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '14px',
             fontStyle: 'bold',
@@ -215,7 +216,7 @@ class CenaAnimais extends Phaser.Scene {
         }).setDepth(100006).setInteractive({ useHandCursor: true });
         btn1.on('pointerdown', () => this.comprarAnimal('galinha'));
 
-        var btn2 = this.add.text(630, 270, '🐄 +1 Vaca — 650€', {
+        var btn2 = this.add.text(630, 270, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarVaca') : '+1 Vaca — 650€'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '14px',
             fontStyle: 'bold',
@@ -225,7 +226,7 @@ class CenaAnimais extends Phaser.Scene {
         }).setDepth(100006).setInteractive({ useHandCursor: true });
         btn2.on('pointerdown', () => this.comprarAnimal('vaca'));
 
-        var hint = this.add.text(790, 350, 'Sai da loja ao mover para fora da tile 🛒', {
+        var hint = this.add.text(790, 350, (window.IdiomasJogo ? IdiomasJogo.t('sairLojaAnimais') : 'Sai da loja ao mover para fora da tile') + ' 🛒', {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '10px',
             color: '#475569'
@@ -249,11 +250,12 @@ class CenaAnimais extends Phaser.Scene {
 
     comprarAnimal(tipo) {
         var custo = (tipo === 'galinha') ? 250 : 650;
-        if (G.moedas < custo) { toast('❌ Saldo insuficiente', 'err'); return; }
+        if (G.moedas < custo) { toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('saldoInsuficiente', 'Saldo insuficiente') : 'Saldo insuficiente'), 'err'); return; }
         G.moedas -= custo;
         if (tipo === 'galinha') G.animaisData.galinhas.qtd++;
         else G.animaisData.vacas.qtd++;
-        toast('✅ Compra feita!', 'ok');
+        if (window.AudioJogo) AudioJogo.sfx('buy');
+        toast('✅ ' + (window.IdiomasJogo ? IdiomasJogo.msg('compraFeita', 'Compra feita!') : 'Compra feita!'), 'ok');
         this.updateHUD();
         guardarJogo();
     }
@@ -445,7 +447,7 @@ class CenaAnimais extends Phaser.Scene {
 
     create() {
         if (!G.animais) {
-            toast('🔒 Animais ainda não estão disponíveis', 'err', 3200);
+            toast('🔒 ' + (window.IdiomasJogo ? IdiomasJogo.msg('animaisIndisp', 'Animais ainda não estão disponíveis') : 'Animais ainda não estão disponíveis'), 'err', 3200);
             MaquinaEstados.irCampo(this.game, false);
             return;
         }
@@ -471,7 +473,7 @@ class CenaAnimais extends Phaser.Scene {
         this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
         this.add.rectangle(500, 375, 1000, 750, 0x0b1220, 0.18);
         this.add.rectangle(500, 375, 920, 650, 0x000000, 0.12);
-        this.add.text(780, 54, '🐄 ANIMAIS', {
+        this.add.text(780, 54, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('animais').toUpperCase() : 'ANIMAIS'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '22px',
             fontStyle: '900',
@@ -496,13 +498,13 @@ class CenaAnimais extends Phaser.Scene {
         this.tileSaida = this.criarTileAcesso({
             gx: saidaPos.x,
             gy: saidaPos.y,
-            label: '🚜 QUINTA',
+            label: '🚜 ' + (window.IdiomasJogo ? IdiomasJogo.t('campo').toUpperCase() : 'QUINTA'),
             fill: 0x0b2a35,
             line: 0x22d3ee,
             pulse: true
         });
         this.tileSaida.zone.on('pointerdown', () => {
-            toast('🚜 De volta ao campo!', 'ok');
+            toast('🚜 ' + (window.IdiomasJogo ? IdiomasJogo.t('voltarCampo') : 'De volta ao campo!'), 'ok');
             guardarJogo();
             MaquinaEstados.irCampo(this.game, false);
         });
@@ -511,7 +513,7 @@ class CenaAnimais extends Phaser.Scene {
         this.tileLoja = this.criarTileAcesso({
             gx: lojaPos.x,
             gy: lojaPos.y,
-            label: '🛒 LOJA',
+            label: '🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('loja').toUpperCase() : 'LOJA'),
             fill: 0x1f2937,
             line: 0xfbbf24,
             pulse: true
@@ -532,7 +534,7 @@ class CenaAnimais extends Phaser.Scene {
         this._cicloInicio = this.time.now;
         this._proximoCiclo = this.time.now + CICLO_MS * this.animaisCicloMult();
 
-        toast('🐔🐄 Animais — alimenta e recolhe produtos!', 'ok', 3200);
+        toast('🐔🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('animais') : 'Animais') + '!', 'ok', 3200);
     }
 
     aplicarCiclo() {
@@ -553,14 +555,16 @@ class CenaAnimais extends Phaser.Scene {
     alimentarZona(z) {
         var a = G.animaisData;
         if (z === 'galinha') {
-            if (a.galinhas.qtd <= 0) { toast('🐔 Não tens galinhas', 'war'); return; }
-            if (a.galinhas.fed >= a.galinhas.qtd) { toast('🐔 Já estão todas alimentadas', 'war'); return; }
+            if (a.galinhas.qtd <= 0) { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semGalinhas', 'Não tens galinhas') : 'Não tens galinhas'), 'war'); return; }
+            if (a.galinhas.fed >= a.galinhas.qtd) { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('galinhasTodas', 'Já estão todas alimentadas') : 'Já estão todas alimentadas'), 'war'); return; }
             a.galinhas.fed++;
+            if (window.AudioJogo) AudioJogo.sfx('animal');
             toast('🐔 Alimentaste 1 galinha (' + a.galinhas.fed + '/' + a.galinhas.qtd + ')', 'ok');
         } else if (z === 'vaca') {
-            if (a.vacas.qtd <= 0) { toast('🐄 Não tens vacas', 'war'); return; }
-            if (a.vacas.fed >= a.vacas.qtd) { toast('🐄 Já estão todas alimentadas', 'war'); return; }
+            if (a.vacas.qtd <= 0) { toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semVacas', 'Não tens vacas') : 'Não tens vacas'), 'war'); return; }
+            if (a.vacas.fed >= a.vacas.qtd) { toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.msg('vacasTodas', 'Já estão todas alimentadas') : 'Já estão todas alimentadas'), 'war'); return; }
             a.vacas.fed++;
+            if (window.AudioJogo) AudioJogo.sfx('animal');
             toast('🐄 Alimentaste 1 vaca (' + a.vacas.fed + '/' + a.vacas.qtd + ')', 'ok');
         }
         this.updateHUD();
@@ -572,21 +576,23 @@ class CenaAnimais extends Phaser.Scene {
         var a = G.animaisData;
         if (z === 'galinha') {
             var qtd = a.galinhas.pronto || 0;
-            if (qtd <= 0) { toast('🥚 Não há ovos prontos', 'war'); return; }
+            if (qtd <= 0) { toast('🥚 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semOvos', 'Não há ovos prontos') : 'Não há ovos prontos'), 'war'); return; }
             var ganho = qtd * 55;
             a.galinhas.pronto = 0;
             G.moedas += ganho;
             G.colheitas++;
             ganharXP(Math.floor(ganho / 10));
+            if (window.AudioJogo) AudioJogo.sfx('harvest');
             toast('✅ Recolheste +' + ganho + '€ em ovos', 'ok');
         } else if (z === 'vaca') {
             var q2 = a.vacas.pronto || 0;
-            if (q2 <= 0) { toast('🥛 Não há leite pronto', 'war'); return; }
+            if (q2 <= 0) { toast('🥛 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semLeite', 'Não há leite pronto') : 'Não há leite pronto'), 'war'); return; }
             var ganho2 = q2 * 85;
             a.vacas.pronto = 0;
             G.moedas += ganho2;
             G.colheitas++;
             ganharXP(Math.floor(ganho2 / 10));
+            if (window.AudioJogo) AudioJogo.sfx('harvest');
             toast('✅ Recolheste +' + ganho2 + '€ em leite', 'ok');
         }
         this.updateHUD();
@@ -631,8 +637,9 @@ class CenaAnimais extends Phaser.Scene {
         if (moved) {
             for (var x = 0; x < this.aCols; x++) for (var y = 0; y < this.aRows; y++) this.drawTile(x, y);
             this.updateTrator(false);
+            if (window.AudioJogo) AudioJogo.sfx('move');
             if (this.ehSaidaSel()) {
-                toast('🚜 De volta ao campo!', 'ok');
+                toast('🚜 ' + (window.IdiomasJogo ? IdiomasJogo.t('voltarCampo') : 'De volta ao campo!'), 'ok');
                 guardarJogo();
                 MaquinaEstados.irCampo(this.game, false);
                 return;
@@ -646,13 +653,13 @@ class CenaAnimais extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.kSpace)) {
             if (this.ehLojaSel() || this.ehSaidaSel()) return;
             var an = this.animalNoTile(this.sel.x, this.sel.y);
-            if (!an) { toast('— Aqui não há animais', 'war'); return; }
+            if (!an) { toast('— ' + (window.IdiomasJogo ? IdiomasJogo.msg('semAnimaisAqui', 'Aqui não há animais') : 'Aqui não há animais'), 'war'); return; }
             var a = G.animaisData;
             if (an.tipo === 'galinha') {
-                if (an.idx < (a.galinhas.fed || 0)) { toast('🐔 Esta já está alimentada', 'war'); return; }
+                if (an.idx < (a.galinhas.fed || 0)) { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('galinhasTodas', 'Já está alimentada') : 'Já está alimentada'), 'war'); return; }
                 this.alimentarZona('galinha');
             } else {
-                if (an.idx < (a.vacas.fed || 0)) { toast('🐄 Esta já está alimentada', 'war'); return; }
+                if (an.idx < (a.vacas.fed || 0)) { toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.msg('vacasTodas', 'Já está alimentada') : 'Já está alimentada'), 'war'); return; }
                 this.alimentarZona('vaca');
             }
         }

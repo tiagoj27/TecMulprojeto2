@@ -1,5 +1,6 @@
 // ─── TOAST / POPUP DOM ───────────────────────────────────────────
 function toast(msg, tipo, dur) {
+    if (window.AudioJogo && tipo === 'err') AudioJogo.sfx('error');
     dur = dur || 2500;
     var c = document.getElementById('toasts');
     var el = document.createElement('div');

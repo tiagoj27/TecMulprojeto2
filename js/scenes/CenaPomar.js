@@ -159,13 +159,14 @@ class CenaPomar extends Phaser.Scene {
     }
 
     updateHUD() {
+        var tr = window.IdiomasJogo || { t: function(k) { return k; } };
         var s = CULTURAS[G.sementeAtiva];
         var nome = s ? (s.emoji + ' ' + s.nome) : G.sementeAtiva;
         this.txtHUD.setText(
-            '🍎 Pomar\n' +
+            '🍎 ' + tr.t('pomar') + '\n' +
             '💰 ' + G.moedas + '€\n' +
-            '🌱 Semente: ' + nome + '  [Q]\n' +
-            '[ESPAÇO] plantar/colher  ·  [ESC] campo'
+            '🌱 ' + tr.t('semente') + ': ' + nome + '  [Q]\n' +
+            tr.t('pomarHint')
         );
     }
 
@@ -256,7 +257,7 @@ class CenaPomar extends Phaser.Scene {
 
     create() {
         if (!G.pomar) {
-            toast('🔒 Pomar ainda não está desbloqueado na loja', 'err', 3200);
+            toast('🔒 ' + (window.IdiomasJogo ? IdiomasJogo.msg('pomarBloq', 'Pomar ainda não está desbloqueado') : 'Pomar ainda não está desbloqueado'), 'err', 3200);
             MaquinaEstados.irCampo(this.game, false);
             return;
         }
@@ -293,7 +294,7 @@ class CenaPomar extends Phaser.Scene {
         this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
         this.add.rectangle(500, 375, 1000, 750, 0x0b1220, 0.18);
         this.add.rectangle(500, 375, 920, 650, 0x000000, 0.12);
-        this.add.text(780, 54, '🍎 POMAR', {
+        this.add.text(780, 54, '🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('pomar').toUpperCase() : 'POMAR'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '22px',
             fontStyle: '900',
@@ -318,13 +319,13 @@ class CenaPomar extends Phaser.Scene {
         this.tileSaida = this.criarTileAcesso({
             gx: saidaPos.x,
             gy: saidaPos.y,
-            label: '🚜 QUINTA',
+            label: '🚜 ' + (window.IdiomasJogo ? IdiomasJogo.t('campo').toUpperCase() : 'QUINTA'),
             fill: 0x0b2a35,
             line: 0x22d3ee,
             pulse: true
         });
         this.tileSaida.zone.on('pointerdown', () => {
-            toast('🚜 De volta ao campo!', 'ok');
+            toast('🚜 ' + (window.IdiomasJogo ? IdiomasJogo.t('voltarCampo') : 'De volta ao campo!'), 'ok');
             G.sementePomarAtiva = G.sementeAtiva;
             G.sementeAtiva = G.sementeCampoAtiva || 'girassol';
             guardarJogo();
@@ -340,7 +341,7 @@ class CenaPomar extends Phaser.Scene {
         this._cicloInicio = this.time.now;
         this._proximoCiclo = this.time.now + CICLO_MS * this.pomarCicloMult();
 
-        toast('🍎 Pomar — planta árvores e colhe frutos!', 'ok', 3200);
+        toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('pomar') : 'Pomar') + '!', 'ok', 3200);
     }
 
     update(t, dt) {
@@ -369,8 +370,9 @@ class CenaPomar extends Phaser.Scene {
             for (var x = 0; x < this.pCols; x++) for (var y = 0; y < this.pRows; y++) this.drawTile(x, y);
             this.updateSaidaUI();
             this.updateTrator(false);
+            if (window.AudioJogo) AudioJogo.sfx('move');
             if (this.ehSaidaSel()) {
-                toast('🚜 De volta ao campo!', 'ok');
+                toast('🚜 ' + (window.IdiomasJogo ? IdiomasJogo.t('voltarCampo') : 'De volta ao campo!'), 'ok');
                 G.sementePomarAtiva = G.sementeAtiva;
                 G.sementeAtiva = G.sementeCampoAtiva || 'girassol';
                 guardarJogo();
@@ -388,7 +390,8 @@ class CenaPomar extends Phaser.Scene {
             G.sementeAtiva = ord[(i + 1) % ord.length];
             G.sementePomarAtiva = G.sementeAtiva;
             var c2 = CULTURAS[G.sementeAtiva];
-            toast(c2.emoji + ' Semente: ' + c2.nome + ' (' + c2.ganho + '€)', 'ok');
+            if (window.AudioJogo) AudioJogo.sfx('click');
+            toast(c2.emoji + ' ' + (window.IdiomasJogo ? IdiomasJogo.t('semente') : 'Semente') + ': ' + c2.nome + ' (' + c2.ganho + '€)', 'ok');
             this.updateHUD();
             guardarJogo();
         }
@@ -418,20 +421,21 @@ class CenaPomar extends Phaser.Scene {
                 var culKey = G.sementeAtiva;
                 var c = CULTURAS[culKey];
                 if (!c || !c.requerPomar) {
-                    toast('🍎 No pomar só dá para plantar árvores/culturas grandes', 'war');
+                    toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.msg('pomarSoArvores', 'No pomar só dá para plantar árvores/culturas grandes') : 'No pomar só dá para plantar árvores/culturas grandes'), 'war');
                     return;
                 }
                 if (this.temArvoreAdjacente(tx, ty)) {
-                    toast('📏 Precisas de 1 bloco de espaço entre árvores', 'war');
+                    toast('📏 ' + (window.IdiomasJogo ? IdiomasJogo.msg('espacoArvores', 'Precisas de 1 bloco de espaço entre árvores') : 'Precisas de 1 bloco de espaço entre árvores'), 'war');
                     return;
                 }
                 var cp = custoPlantio(culKey);
-                if (G.moedas < cp) { toast('❌ Sementes custam ' + cp + '€', 'err'); return; }
+                if (G.moedas < cp) { toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('sementesCustam', 'Sementes custam {valor}€', { valor: cp }) : 'Sementes custam ' + cp + '€'), 'err'); return; }
                 G.moedas -= cp;
                 G.pomarPlantas[tx][ty] = 1;
                 G.pomarTipo[tx][ty] = culKey;
                 this.drawTile(tx, ty);
                 this.updateHUD();
+                if (window.AudioJogo) AudioJogo.sfx('plant');
                 toast(c.emoji + ' ' + c.nome + ' (-' + cp + '€)', 'ok');
                 guardarJogo();
             } else if (G.pomarPlantas[tx][ty] >= 5) {
@@ -449,7 +453,8 @@ class CenaPomar extends Phaser.Scene {
                 this.updateHUD();
                 var pp = this.iso(tx, ty);
                 coinPop(this.game.canvas, pp.x, pp.y - 40, ganho);
-                toast('✅ Colheste +' + ganho + '€', 'ok');
+                if (window.AudioJogo) AudioJogo.sfx('harvest');
+                toast('✅ ' + (window.IdiomasJogo ? IdiomasJogo.msg('colheste', 'Colheste +{valor}€', { valor: ganho }) : 'Colheste +' + ganho + '€'), 'ok');
                 guardarJogo();
             }
         }

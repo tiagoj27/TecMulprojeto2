@@ -15,12 +15,14 @@ var MaquinaEstados = {
 
     irLoja: function(game) {
         if (this.atual === Estado.LOJA) return;
+        if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.LOJA);
         game.scene.start('CenaLoja');
     },
 
     irCampo: function(game, fromShop) {
         if (this.atual === Estado.CAMPO) return;
+        if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.CAMPO);
         if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
         if (game.scene.isActive('CenaPomar')) game.scene.stop('CenaPomar');
@@ -30,6 +32,7 @@ var MaquinaEstados = {
 
     irPomar: function(game) {
         if (this.atual === Estado.POMAR) return;
+        if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.POMAR);
         if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
         game.scene.start('CenaPomar');
@@ -37,6 +40,7 @@ var MaquinaEstados = {
 
     irAnimais: function(game) {
         if (this.atual === Estado.ANIMAIS) return;
+        if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.ANIMAIS);
         if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
         if (game.scene.isActive('CenaPomar')) game.scene.stop('CenaPomar');

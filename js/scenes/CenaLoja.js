@@ -6,7 +6,8 @@ class CenaLoja extends Phaser.Scene {
     sairLoja() {
         if (!MaquinaEstados.esta(Estado.LOJA) || this._aSair) return;
         this._aSair = true;
-        toast('👋 De volta ao campo!', 'ok');
+        if (window.AudioJogo) AudioJogo.sfx('click');
+        toast('👋 ' + (window.IdiomasJogo ? IdiomasJogo.t('voltarCampo') : 'De volta ao campo!'), 'ok');
         MaquinaEstados.irCampo(this.game, true);
     }
 
@@ -70,8 +71,10 @@ class CenaLoja extends Phaser.Scene {
             bg.strokeRoundedRect(cx, y, cw, ch, 8);
 
             var num = (i + 1) % 10;
-            var linha1 = it.emoji + ' ' + it.nome + (maxed ? ' ✓' : ' — ' + custo + '€');
-            var linha2 = it.desc + (maxed ? '' : '  [' + num + ']');
+            var nomeItem = window.IdiomasJogo ? IdiomasJogo.itemLoja(it.id, 'nome', it.nome) : it.nome;
+            var descItem = window.IdiomasJogo ? IdiomasJogo.itemLoja(it.id, 'desc', it.desc) : it.desc;
+            var linha1 = it.emoji + ' ' + nomeItem + (maxed ? ' ✓' : ' — ' + custo + '€');
+            var linha2 = descItem + (maxed ? '' : '  [' + num + '] ' + (window.IdiomasJogo ? IdiomasJogo.t('comprar') : 'comprar'));
             var txt = self.add.text(cx + 14, y + ch/2, linha1 + '\n' + linha2, {
                 fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
                 color: maxed ? '#4ade80' : (can ? '#e2e8f0' : '#f87171'), lineSpacing: 4
@@ -87,7 +90,7 @@ class CenaLoja extends Phaser.Scene {
         });
 
         if (this.txtLojaScroll) this.txtLojaScroll.destroy();
-        this.txtLojaScroll = this.add.text(740, 628, 'Roda do rato para ver mais · [1-9] comprar', {
+        this.txtLojaScroll = this.add.text(740, 628, (window.IdiomasJogo ? IdiomasJogo.t('lojaAjudaScroll') : 'Roda do rato para ver mais · [1-9] comprar'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '10px', color: '#475569'
         }).setOrigin(0.5).setDepth(100);
     }
@@ -148,12 +151,12 @@ class CenaLoja extends Phaser.Scene {
         glow.fillGradientStyle(0x0ea5e9, 0x0ea5e9, 0x0a0f1e, 0x0a0f1e, 0.06, 0.06, 0, 0);
         glow.fillRect(0, 0, 1000, 200);
 
-        this.add.text(500, 52, 'STAND DA QUINTA', {
+        this.add.text(500, 52, (window.IdiomasJogo ? IdiomasJogo.t('standTitulo') : 'STAND DA QUINTA'), {
             fontFamily: "'Press Start 2P',monospace",
             fontSize: '26px', color: '#facc15',
             shadow: { blur: 25, color: '#f97316', fill: true }
         }).setOrigin(0.5);
-        this.add.text(500, 90, '— a garagem dos campeões —', {
+        this.add.text(500, 90, '— ' + (window.IdiomasJogo ? IdiomasJogo.t('standSubtitulo') : 'a garagem dos campeões') + ' —', {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '13px', fontStyle: 'italic', color: '#475569'
         }).setOrigin(0.5);
@@ -162,7 +165,7 @@ class CenaLoja extends Phaser.Scene {
         saidaGfx.fillStyle(0x0e7490, 0.85); saidaGfx.fillRect(0, 280, 72, 150);
         saidaGfx.lineStyle(2, 0x22d3ee, 1);  saidaGfx.strokeRect(0, 280, 72, 150);
 
-        this.btnSair = this.add.text(36, 355, '◀  SAIR', {
+        this.btnSair = this.add.text(36, 355, '◀  ' + (window.IdiomasJogo ? IdiomasJogo.t('sair') : 'SAIR'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '14px', fontStyle: 'bold',
             color: '#22d3ee', backgroundColor: '#0e7490ee',
             padding: { x: 12, y: 10 }
@@ -176,7 +179,7 @@ class CenaLoja extends Phaser.Scene {
         var pod = this.add.graphics();
         pod.fillStyle(0x6d28d9, 0.08); pod.fillRoundedRect(130, 130, 320, 420, 16);
         pod.lineStyle(1, 0x7c3aed, 0.4); pod.strokeRoundedRect(130, 130, 320, 420, 16);
-        this.add.text(290, 158, '🚜  O MEU TRATOR', {
+        this.add.text(290, 158, '🚜  ' + (window.IdiomasJogo ? IdiomasJogo.t('meuTrator') : 'O MEU TRATOR'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '13px', fontStyle: 'bold', color: '#a78bfa'
         }).setOrigin(0.5);
 
@@ -201,7 +204,7 @@ class CenaLoja extends Phaser.Scene {
         sp.lineStyle(1, 0x1e293b, 0.8); sp.strokeRoundedRect(510, 120, 460, 620, 16);
         sp.lineStyle(2, 0xfacc15, 0.5);
         sp.beginPath(); sp.moveTo(530,160); sp.lineTo(950,160); sp.strokePath();
-        this.add.text(740, 140, '🛒  UPGRADES DISPONÍVEIS', {
+        this.add.text(740, 140, '🛒  ' + (window.IdiomasJogo ? IdiomasJogo.t('upgradesDisponiveis') : 'UPGRADES DISPONÍVEIS'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '15px', fontStyle: 'bold', color: '#f8fafc'
         }).setOrigin(0.5);
 
@@ -210,7 +213,7 @@ class CenaLoja extends Phaser.Scene {
         var sY = 640;
         sp.lineStyle(1, 0x1e293b, 0.8);
         sp.beginPath(); sp.moveTo(530, sY-10); sp.lineTo(950, sY-10); sp.strokePath();
-        this.add.text(740, sY+5, '📊  ESTATÍSTICAS', {
+        this.add.text(740, sY+5, '📊  ' + (window.IdiomasJogo ? IdiomasJogo.t('estatisticas') : 'ESTATÍSTICAS'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold', color: '#475569'
         }).setOrigin(0.5);
         this.txtStats = this.add.text(740, sY+28, '', {
@@ -228,16 +231,16 @@ class CenaLoja extends Phaser.Scene {
             color: '#facc15', shadow: { blur: 8, color: '#f97316', fill: true }
         }).setOrigin(0.5).setDepth(1000);
         this.updateSaldo();
-        this.add.text(500, 668, '[1-9] comprar  ·  [ESC]/[V]/◀ SAIR', {
+        this.add.text(500, 668, (window.IdiomasJogo ? IdiomasJogo.t('lojaAjudaCompra') : '[1-9] comprar  ·  [ESC]/[V]/◀ SAIR'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '11px', color: '#64748b'
         }).setOrigin(0.5).setDepth(1000);
-        this.add.text(880, 22, '🗑️ Reset', {
+        this.add.text(880, 22, '🗑️ ' + (window.IdiomasJogo ? IdiomasJogo.t('reset') : 'Reset'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '11px', color: '#f87171',
             backgroundColor: '#1f0808cc', padding: { x: 8, y: 4 }
         }).setOrigin(0.5).setDepth(10001)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', function() { resetarGravacao(); });
-        toast('🛒 Stand — gasta € em upgrades! [1-9] ou clica', 'ok', 3500);
+        toast('🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('standToast') : 'Stand — gasta € em upgrades! [1-9] ou clica'), 'ok', 3500);
     }
 
     drawTratorLoja() {
@@ -270,25 +273,27 @@ class CenaLoja extends Phaser.Scene {
     }
 
     updateNivel() {
+        var tr = window.IdiomasJogo || { t: function(k) { return k; } };
         var nomes = ['—','🔴 CLÁSSICO','🟡 TURBO','🚀 HIPER'];
         this.txtNivel.setText(
-            'Trator ' + G.nivelTrator + ' — ' + (nomes[G.nivelTrator]||'') + '\n' +
-            '⭐ Quinta nv.' + (G.nivelQuinta||1) + '  Gasto: ' + (G.totalGasto || 0) + '€'
+            tr.t('trator') + ' ' + G.nivelTrator + ' — ' + (nomes[G.nivelTrator]||'') + '\n' +
+            '⭐ ' + tr.t('nivelQuinta') + (G.nivelQuinta||1) + '  ' + tr.t('gasto') + ': ' + (G.totalGasto || 0) + '€'
         );
     }
 
     updateStats() {
+        var tr = window.IdiomasJogo || { t: function(k) { return k; } };
         this.txtStats.setText([
-            '🌾 Colheitas: ' + G.colheitas + '  🗺 Exp.: ' + G.expansoes,
+            '🌾 ' + tr.t('colheitas') + ': ' + G.colheitas + '  🗺 ' + tr.t('exp') + ': ' + G.expansoes,
             '💦' + G.aspersores + ' 👨‍🌾' + G.empregados + ' 🐔' + G.galinheiro,
-            '🏗️ Silos:' + G.silos + ' Celeiro:' + G.celeiroNv + ' ⚡' + G.irradiadores,
-            '✨ Ouro:' + (G.ouroNv||0) + ' 🚢 Export:' + (G.exportador?'Sim':'Não'),
-            '⛏️ Arado:' + (G.arado ? (G.aradoAcoplado ? 'ON' : 'OFF') : 'Não') + '  Terreno+:' + (G.ampliacoesTerreno || 0),
+            '🏗️ ' + tr.t('silos') + ':' + G.silos + ' ' + tr.t('celeiro') + ':' + G.celeiroNv + ' ⚡' + G.irradiadores,
+            '✨ ' + tr.t('ouro') + ':' + (G.ouroNv||0) + ' 🚢 ' + tr.t('exportador') + ':' + (G.exportador ? tr.t('sim') : tr.t('nao')),
+            '⛏️ ' + tr.t('arado') + ':' + (G.arado ? (G.aradoAcoplado ? 'ON' : 'OFF') : tr.t('nao')) + '  ' + tr.t('terrenoMais') + ':' + (G.ampliacoesTerreno || 0),
         ].join('\n'));
     }
 
     updateSaldo() {
-        this.txtSaldo.setText('💰  Saldo: ' + G.moedas + '€');
+        this.txtSaldo.setText('💰  ' + (window.IdiomasJogo ? IdiomasJogo.t('saldo') : 'Saldo') + ': ' + G.moedas + '€');
     }
 
     update() {
