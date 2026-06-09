@@ -5,12 +5,13 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    padding: 30px;
     overflow: hidden;
 }
 #game-wrapper {
     position: relative;
-    width: 1000px;
-    height: 750px;
+    width: var(--game-width, calc(100vw - 60px));
+    height: var(--game-height, calc(100vh - 60px));
 }
 canvas {
     display: block;

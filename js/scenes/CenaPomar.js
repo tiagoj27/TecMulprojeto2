@@ -137,6 +137,7 @@ class CenaPomar extends Phaser.Scene {
     iso(gx, gy) {
         var tam = 54;
         var ox = 520, oy = 185;
+        var ox = JOGO_CENTRO_X, oy = JOGO_CENTRO_Y - 190;
         return {
             x: ox + (gx - gy) * tam,
             y: oy + (gx + gy) * (tam * 0.5)
@@ -268,6 +269,7 @@ class CenaPomar extends Phaser.Scene {
         }
 
         MaquinaEstados.mudar(Estado.POMAR);
+        this.cameras.main.setScroll(0, 0);
 
         this.pCols = 6;
         this.pRows = 6;
@@ -276,6 +278,10 @@ class CenaPomar extends Phaser.Scene {
         this.sel = { x: 2, y: 2 };
 
         this.keys = this.input.keyboard.createCursorKeys();
+        this.kW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.kA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.kS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.kD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.kSpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.kQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
         this.kEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
@@ -291,10 +297,17 @@ class CenaPomar extends Phaser.Scene {
             G.sementePomarAtiva = G.sementeAtiva;
         }
 
+<<<<<<< Updated upstream
         this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
         this.add.rectangle(500, 375, 1000, 750, 0x0b1220, 0.18);
         this.add.rectangle(500, 375, 920, 650, 0x000000, 0.12);
         this.add.text(780, 54, '🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('pomar').toUpperCase() : 'POMAR'), {
+=======
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x0b1220, 0.18);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA - 80, JOGO_ALTURA - 80, 0x000000, 0.12);
+        this.add.text(JOGO_LARGURA - 220, 54, '🍎 POMAR', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '22px',
             fontStyle: '900',
@@ -350,18 +363,27 @@ class CenaPomar extends Phaser.Scene {
         var moved = false;
         var saida = this.posSaida();
         if (Phaser.Input.Keyboard.JustDown(this.keys.left)) {
+        var moveLeft = Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.kA);
+        var moveRight = Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.kD);
+        var moveUp = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.kW);
+        var moveDown = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.kS);
+
+        if (moveLeft) {
             if (this.sel.x > 0) { this.sel.x--; this.trDir = { x: -1, y: 0 }; moved = true; }
             else if (this.sel.x === 0 && this.sel.y === saida.y) { this.sel.x = saida.x; this.trDir = { x: -1, y: 0 }; moved = true; }
         }
         if (Phaser.Input.Keyboard.JustDown(this.keys.right)) {
+        if (moveRight) {
             if (this.sel.x === saida.x && this.sel.y === saida.y) { this.sel.x = 0; this.trDir = { x: 1, y: 0 }; moved = true; }
             else if (this.sel.x < this.pCols - 1) { this.sel.x++; this.trDir = { x: 1, y: 0 }; moved = true; }
         }
         if (Phaser.Input.Keyboard.JustDown(this.keys.up)) {
+        if (moveUp) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y > 0) { this.sel.y--; this.trDir = { x: 0, y: -1 }; moved = true; }
         }
         if (Phaser.Input.Keyboard.JustDown(this.keys.down)) {
+        if (moveDown) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y < this.pRows - 1) { this.sel.y++; this.trDir = { x: 0, y: 1 }; moved = true; }
         }

@@ -100,6 +100,10 @@ class CenaLoja extends Phaser.Scene {
             this.game.canvas.setAttribute('tabindex', '1');
             this.game.canvas.focus();
         }
+        this._layoutOffsetX = Math.max(0, Math.round((JOGO_LARGURA - 1000) / 2));
+        this._layoutOffsetY = Math.max(0, Math.round((JOGO_ALTURA - 750) / 2));
+        this.cameras.main.setScroll(-this._layoutOffsetX, -this._layoutOffsetY);
+
         this._aSair = false;
         MaquinaEstados.mudar(Estado.LOJA);
         this.keys = this.input.keyboard.createCursorKeys();
@@ -140,16 +144,18 @@ class CenaLoja extends Phaser.Scene {
         }
 
         var bg = this.add.graphics();
+        var offX = this._layoutOffsetX;
+        var offY = this._layoutOffsetY;
         bg.fillGradientStyle(0x0a0f1e, 0x0a0f1e, 0x111827, 0x111827, 1);
-        bg.fillRect(0, 0, 1000, 750);
+        bg.fillRect(-offX, -offY, JOGO_LARGURA, JOGO_ALTURA);
 
         bg.lineStyle(1, 0x1e293b, 0.4);
-        for (var i = 0; i < 1000; i += 60) { bg.beginPath(); bg.moveTo(i,0); bg.lineTo(i,750); bg.strokePath(); }
-        for (var j = 0; j < 750;  j += 60) { bg.beginPath(); bg.moveTo(0,j); bg.lineTo(1000,j); bg.strokePath(); }
+        for (var i = -offX; i < JOGO_LARGURA - offX; i += 60) { bg.beginPath(); bg.moveTo(i, -offY); bg.lineTo(i, JOGO_ALTURA - offY); bg.strokePath(); }
+        for (var j = -offY; j < JOGO_ALTURA - offY;  j += 60) { bg.beginPath(); bg.moveTo(-offX, j); bg.lineTo(JOGO_LARGURA - offX, j); bg.strokePath(); }
 
         var glow = this.add.graphics();
         glow.fillGradientStyle(0x0ea5e9, 0x0ea5e9, 0x0a0f1e, 0x0a0f1e, 0.06, 0.06, 0, 0);
-        glow.fillRect(0, 0, 1000, 200);
+        glow.fillRect(-offX, -offY, JOGO_LARGURA, 200 + offY);
 
         this.add.text(500, 52, (window.IdiomasJogo ? IdiomasJogo.t('standTitulo') : 'STAND DA QUINTA'), {
             fontFamily: "'Press Start 2P',monospace",

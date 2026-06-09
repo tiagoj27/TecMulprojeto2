@@ -13,7 +13,7 @@ var G = {
     contrato: null, conquistas: null,
     arado: false, aradoAcoplado: false, ampliacoesTerreno: 0,
     pomar: false, pomarPlantas: null, pomarTipo: null, pomarRega: null,
-    animais: true, animaisData: null
+    animais: false, animaisData: null
     , sementeCampoAtiva: 'girassol', sementePomarAtiva: 'cereja'
 };
 
@@ -69,6 +69,10 @@ var LOJA_CATALOGO = [
     { id: 'pomar', emoji: '🍎', nome: 'Pomar', max: 1, custoBase: 9000, mult: 1,
       desc: 'Desbloqueia o pomar (árvores e culturas grandes)', requer: function() { return !G.pomar && terrenoTodoDesbloqueado(); },
       aplicar: function() { G.pomar = true; } }
+    ,
+    { id: 'animais', emoji: '🐄', nome: 'Animais', max: 1, custoBase: 14000, mult: 1,
+      desc: 'Desbloqueia a área de animais (galinhas e vacas)', requer: function() { return !G.animais && terrenoTodoDesbloqueado(); },
+      aplicar: function() { G.animais = true; } }
 ];
 
 function velocidadeTratorNivel(nivel) {
@@ -370,6 +374,7 @@ function nivelLoja(id) {
     if (id === 'exportador') return G.exportador ? 1 : 0;
     if (id === 'elite') return G.eliteSem && G.eliteSem[G.sementeAtiva] ? 1 : 0;
     if (id === 'pomar') return G.pomar ? 1 : 0;
+    if (id === 'animais') return G.animais ? 1 : 0;
     return 0;
 }
 

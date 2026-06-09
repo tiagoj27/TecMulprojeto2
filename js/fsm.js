@@ -17,6 +17,9 @@ var MaquinaEstados = {
         if (this.atual === Estado.LOJA) return;
         if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.LOJA);
+        if (game.scene.isActive('CenaQuinta')) game.scene.stop('CenaQuinta');
+        if (game.scene.isActive('CenaPomar')) game.scene.stop('CenaPomar');
+        if (game.scene.isActive('CenaAnimais')) game.scene.stop('CenaAnimais');
         game.scene.start('CenaLoja');
     },
 
@@ -34,7 +37,9 @@ var MaquinaEstados = {
         if (this.atual === Estado.POMAR) return;
         if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.POMAR);
+        if (game.scene.isActive('CenaQuinta')) game.scene.stop('CenaQuinta');
         if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
+        if (game.scene.isActive('CenaAnimais')) game.scene.stop('CenaAnimais');
         game.scene.start('CenaPomar');
     },
 
@@ -42,6 +47,7 @@ var MaquinaEstados = {
         if (this.atual === Estado.ANIMAIS) return;
         if (window.AudioJogo) AudioJogo.sfx('transition');
         this.mudar(Estado.ANIMAIS);
+        if (game.scene.isActive('CenaQuinta')) game.scene.stop('CenaQuinta');
         if (game.scene.isActive('CenaLoja')) game.scene.stop('CenaLoja');
         if (game.scene.isActive('CenaPomar')) game.scene.stop('CenaPomar');
         game.scene.start('CenaAnimais');

@@ -10,6 +10,7 @@ class CenaAnimais extends Phaser.Scene {
     iso(gx, gy) {
         var tam = 54;
         var ox = 520, oy = 210;
+        var ox = JOGO_CENTRO_X, oy = JOGO_CENTRO_Y - 165;
         return {
             x: ox + (gx - gy) * tam,
             y: oy + (gx + gy) * (tam * 0.5)
@@ -184,29 +185,45 @@ class CenaAnimais extends Phaser.Scene {
         this._lojaAberta = false;
         this._lojaEls = [];
         this._lojaCont = this.add.container(0, 0).setDepth(100005).setVisible(false);
+        var lojaX = JOGO_LARGURA - 390;
+        var lojaTituloX = lojaX + 180;
 
         var bg = this.add.graphics();
         bg.fillStyle(0x060d1a, 0.94);
         bg.fillRoundedRect(610, 110, 360, 260, 14);
+        bg.fillRoundedRect(lojaX, 110, 360, 260, 14);
         bg.lineStyle(1, 0x1e293b, 0.9);
         bg.strokeRoundedRect(610, 110, 360, 260, 14);
         bg.lineStyle(2, 0xfbbf24, 0.6);
         bg.beginPath(); bg.moveTo(630, 150); bg.lineTo(950, 150); bg.strokePath();
+        bg.beginPath(); bg.moveTo(lojaX + 20, 150); bg.lineTo(lojaX + 340, 150); bg.strokePath();
 
+<<<<<<< Updated upstream
         var title = this.add.text(790, 130, '🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimais') : 'LOJA DOS ANIMAIS'), {
+=======
+        var title = this.add.text(lojaTituloX, 130, '🛒 LOJA DOS ANIMAIS', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '15px',
             fontStyle: '900',
             color: '#f8fafc'
         }).setOrigin(0.5);
 
+<<<<<<< Updated upstream
         var info = this.add.text(630, 164, (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimaisInfo') : 'Clique para comprar. A produção só acontece se alimentares.'), {
+=======
+        var info = this.add.text(lojaX + 20, 164, 'Clique para comprar. A produção só acontece se alimentares.', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '11px',
             color: '#64748b'
         });
 
+<<<<<<< Updated upstream
         var btn1 = this.add.text(630, 210, '🐔 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarGalinha') : '+1 Galinha — 250€'), {
+=======
+        var btn1 = this.add.text(lojaX + 20, 210, '🐔 +1 Galinha — 250€', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '14px',
             fontStyle: 'bold',
@@ -216,7 +233,11 @@ class CenaAnimais extends Phaser.Scene {
         }).setDepth(100006).setInteractive({ useHandCursor: true });
         btn1.on('pointerdown', () => this.comprarAnimal('galinha'));
 
+<<<<<<< Updated upstream
         var btn2 = this.add.text(630, 270, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarVaca') : '+1 Vaca — 650€'), {
+=======
+        var btn2 = this.add.text(lojaX + 20, 270, '🐄 +1 Vaca — 650€', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '14px',
             fontStyle: 'bold',
@@ -226,7 +247,11 @@ class CenaAnimais extends Phaser.Scene {
         }).setDepth(100006).setInteractive({ useHandCursor: true });
         btn2.on('pointerdown', () => this.comprarAnimal('vaca'));
 
+<<<<<<< Updated upstream
         var hint = this.add.text(790, 350, (window.IdiomasJogo ? IdiomasJogo.t('sairLojaAnimais') : 'Sai da loja ao mover para fora da tile') + ' 🛒', {
+=======
+        var hint = this.add.text(lojaTituloX, 350, 'Sai da loja ao mover para fora da tile 🛒', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '10px',
             color: '#475569'
@@ -458,6 +483,7 @@ class CenaAnimais extends Phaser.Scene {
         }
 
         MaquinaEstados.mudar(Estado.ANIMAIS);
+        this.cameras.main.setScroll(0, 0);
 
         this.aCols = 6;
         this.aRows = 4;
@@ -466,14 +492,25 @@ class CenaAnimais extends Phaser.Scene {
         this.sel = { x: 2, y: 2 };
 
         this.keys = this.input.keyboard.createCursorKeys();
+        this.kW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.kA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.kS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.kD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.kSpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.kR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         this.kEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
+<<<<<<< Updated upstream
         this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
         this.add.rectangle(500, 375, 1000, 750, 0x0b1220, 0.18);
         this.add.rectangle(500, 375, 920, 650, 0x000000, 0.12);
         this.add.text(780, 54, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('animais').toUpperCase() : 'ANIMAIS'), {
+=======
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x0b1220, 0.18);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA - 80, JOGO_ALTURA - 80, 0x000000, 0.12);
+        this.add.text(JOGO_LARGURA - 220, 54, '🐄 ANIMAIS', {
+>>>>>>> Stashed changes
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '22px',
             fontStyle: '900',
@@ -612,22 +649,30 @@ class CenaAnimais extends Phaser.Scene {
         var moved = false;
         var saida = this.posSaida();
         var loja = this.posLoja();
+        var moveLeft = Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.kA);
+        var moveRight = Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.kD);
+        var moveUp = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.kW);
+        var moveDown = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.kS);
 
         if (Phaser.Input.Keyboard.JustDown(this.keys.left)) {
+        if (moveLeft) {
             if (this.sel.x > 0) { this.sel.x--; this.trDir = { x: -1, y: 0 }; moved = true; }
             else if (this.sel.x === 0 && this.sel.y === saida.y) { this.sel.x = saida.x; this.trDir = { x: -1, y: 0 }; moved = true; }
             else if (this.sel.x === loja.x && this.sel.y === loja.y) { this.sel.x = this.aCols - 1; this.sel.y = 0; this.trDir = { x: -1, y: 0 }; moved = true; }
         }
         if (Phaser.Input.Keyboard.JustDown(this.keys.right)) {
+        if (moveRight) {
             if (this.sel.x === saida.x && this.sel.y === saida.y) { this.sel.x = 0; this.trDir = { x: 1, y: 0 }; moved = true; }
             else if (this.sel.x === this.aCols - 1 && this.sel.y === 0) { this.sel.x = loja.x; this.sel.y = loja.y; this.trDir = { x: 1, y: 0 }; moved = true; }
             else if (this.sel.x < this.aCols - 1) { this.sel.x++; this.trDir = { x: 1, y: 0 }; moved = true; }
         }
         if (Phaser.Input.Keyboard.JustDown(this.keys.up)) {
+        if (moveUp) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y > 0) { this.sel.y--; this.trDir = { x: 0, y: -1 }; moved = true; }
         }
         if (Phaser.Input.Keyboard.JustDown(this.keys.down)) {
+        if (moveDown) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y < this.aRows - 1) { this.sel.y++; this.trDir = { x: 0, y: 1 }; moved = true; }
         }

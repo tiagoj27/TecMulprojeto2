@@ -27,6 +27,7 @@ class CenaQuinta extends Phaser.Scene {
             if (x === p.x && y === p.y) return true;
         }
         if (G.animais) {
+        if (G.animais && terrenoTodoDesbloqueado()) {
             var a = this.posAnimais();
             if (x === a.x && y === a.y) return true;
         }
@@ -71,6 +72,14 @@ class CenaQuinta extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(10000);
 
         return { g: g, zone: zone, txt: txt };
+    }
+
+    preload() {
+        this.load.on('loaderror', function(file) {
+            try { toast('🖼️ Erro a carregar fundo: ' + (file && file.key ? file.key : 'bg_quinta'), 'err', 3500); } catch (e) {}
+            console.warn('Erro a carregar asset', file);
+        });
+        this.load.image('bg_quinta', 'assets/bg_quinta.png');
     }
 
     create(data) {
@@ -142,11 +151,18 @@ class CenaQuinta extends Phaser.Scene {
         normalizarAspersores();
 
         this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a).setDepth(-2);
+        if (this.textures.exists('bg_quinta')) {
+            this.add.image(JOGO_CENTRO_X, JOGO_CENTRO_Y, 'bg_quinta').setDepth(-1).setDisplaySize(JOGO_LARGURA, JOGO_ALTURA);
+        } else {
+            console.warn('bg_quinta não existe (falha de preload?)');
+        }
 
         for (var x = 0; x < COLS; x++) {
             this.terreno[x] = []; this.gTiles[x] = []; this.gDetail[x] = [];
             for (var y = 0; y < ROWS; y++) {
                 var h = Math.sin(x*0.55) * Math.cos(y*0.55) * 22;
+                var h = Math.sin(x*0.55) * Math.cos(y*0.55) * QUINTA_RELEVO_BASE * JOGO_ESCALA;
                 this.terreno[x][y] = h;
                 var p = this.iso(x, y);
 
@@ -197,6 +213,7 @@ class CenaQuinta extends Phaser.Scene {
 
         this.tileAnimais = null;
         if (G.animais) {
+        if (G.animais && terrenoTodoDesbloqueado()) {
             var animaisPos = this.posAnimais();
             this.tileAnimais = this.criarTileAcesso({
                 gx: animaisPos.x,
@@ -234,16 +251,20 @@ class CenaQuinta extends Phaser.Scene {
 
         var ui = this.add.graphics().setDepth(99990);
         ui.fillStyle(0x060d1a, 0.9); ui.lineStyle(1, 0x22d3ee, 0.3);
+        ui.fillStyle(0x060d1a, 0.96); ui.lineStyle(1, 0x22d3ee, 0.42);
         ui.fillRoundedRect(10, 10, 285, 138, 10);
         ui.strokeRoundedRect(10, 10, 285, 138, 10);
 
         this.txtUI = this.add.text(20, 20, '', {
             fontFamily: "'Exo 2',sans-serif", fontSize: '13px', fontStyle: 'bold',
             color: '#e2e8f0', lineSpacing: 6
+            fontFamily: "'Exo 2',sans-serif", fontSize: '14px', fontStyle: 'bold',
+            color: '#f8fafc', lineSpacing: 6
         }).setDepth(99991);
 
         var ct = this.add.graphics().setDepth(99990);
         ct.fillStyle(0x060d1a, 0.8); ct.lineStyle(1, 0x1e293b, 0.6);
+        ct.fillStyle(0x060d1a, 0.92); ct.lineStyle(1, 0x334155, 0.85);
         ct.fillRoundedRect(10, 130, 285, 175, 10);
         ct.strokeRoundedRect(10, 130, 285, 175, 10);
         this.add.text(20, 140, [
@@ -256,6 +277,8 @@ class CenaQuinta extends Phaser.Scene {
         ].join('\n'), {
             fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
             color: '#475569', lineSpacing: 5
+            fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
+            color: '#94a3b8', lineSpacing: 5
         }).setDepth(99991);
 
         var mp = this.add.graphics().setDepth(99990);
@@ -265,15 +288,26 @@ class CenaQuinta extends Phaser.Scene {
         this.txtMissoes = this.add.text(715, 22, '', {
             fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
             color: '#94a3b8', lineSpacing: 5
+        mp.fillStyle(0x060d1a, 0.96); mp.lineStyle(1, 0xfacc15, 0.48);
+        var painelDireitaX = JOGO_LARGURA - 300;
+        mp.fillRoundedRect(painelDireitaX, 10, 290, 200, 10);
+        mp.strokeRoundedRect(painelDireitaX, 10, 290, 200, 10);
+        this.txtMissoes = this.add.text(painelDireitaX + 15, 22, '', {
+            fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
+            color: '#cbd5e1', lineSpacing: 5
         }).setDepth(99991);
         this.txtContrato = this.add.text(715, 118, '', {
             fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
             color: '#a5b4fc', lineSpacing: 5
+        this.txtContrato = this.add.text(painelDireitaX + 15, 118, '', {
+            fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
+            color: '#c7d2fe', lineSpacing: 5
         }).setDepth(99991);
 
         this._cicloInicio  = this.time.now;
         this._proximoCiclo = this.time.now + CICLO_MS;
         this._proximoMov   = 0;
+        this._ciclosNoDia  = 0;
 
         this.updateUI();
         if (data && data.fromShop) {
@@ -288,6 +322,7 @@ class CenaQuinta extends Phaser.Scene {
 
     iso(gx, gy) {
         var ox = 500, oy = 200;
+        var ox = ISO_ORIGEM_X, oy = ISO_ORIGEM_Y;
         return {
             x: ox + (gx - gy) * TAM,
             y: oy + (gx + gy) * (TAM * 0.5)
@@ -376,6 +411,172 @@ class CenaQuinta extends Phaser.Scene {
         }
     }
 
+    variantePlanta(x, y, tipo) {
+        var valor = x * 17 + y * 31;
+        var nome = tipo || '';
+        for (var indice = 0; indice < nome.length; indice++) {
+            valor += nome.charCodeAt(indice) * (indice + 3);
+        }
+        return Math.abs(valor) % 4;
+    }
+
+    desenharMilho(d, estado, variante) {
+        var altura = estado === 2 ? 18 : (estado === 3 ? 28 : 38);
+        var caules = estado >= 4 ? 3 : (estado >= 3 ? 2 : 1);
+        var offsets = caules === 1 ? [0] : (caules === 2 ? [-7, 7] : [-10, 0, 10]);
+
+        d.fillStyle(0x34552d, 0.26);
+        d.fillEllipse(0, 9, 34, 10);
+
+        for (var i = 0; i < offsets.length; i++) {
+            var ox = offsets[i] + (variante - 1.5) * 1.2;
+            var h = altura + (i % 2) * 5;
+            d.lineStyle(5, 0xb8ee55, 1);
+            d.beginPath(); d.moveTo(ox, 6); d.lineTo(ox, -h); d.strokePath();
+
+            d.fillStyle(0x6be34f, 1);
+            d.fillEllipse(ox - 7, -h * 0.45, 13, 8);
+            d.fillEllipse(ox + 7, -h * 0.62, 13, 8);
+            if (estado >= 3) {
+                d.fillStyle(0xffe900, 1);
+                d.fillEllipse(ox - 6, -h + 7, 8, 16);
+            }
+            if (estado >= 4) {
+                d.fillStyle(0xffb000, 1);
+                d.fillEllipse(ox + 5, -h * 0.55, 8, 17);
+            }
+        }
+    }
+
+    desenharMorango(d, estado, variante) {
+        var pontos = [
+            [-11, 0], [-4, -5], [8, -3], [12, 4],
+            [-8, 7], [2, 6], [0, -12], [15, -9]
+        ];
+        var qtd = estado === 2 ? 4 : (estado === 3 ? 6 : pontos.length);
+
+        d.fillStyle(0x31512e, 0.28);
+        d.fillEllipse(0, 7, 36, 14);
+        d.fillStyle(0x78bd4d, 1);
+        for (var i = 0; i < qtd; i++) {
+            var p = pontos[(i + variante) % pontos.length];
+            d.fillCircle(p[0], p[1], 6);
+            d.fillCircle(p[0] + 4, p[1] - 2, 5);
+            if (estado >= 4 && i % 2 === 0) {
+                d.fillStyle(0xe84b3f, 1);
+                d.fillEllipse(p[0] + 1, p[1] - 6, 7, 9);
+                d.fillStyle(0xffd8a8, 0.8);
+                d.fillCircle(p[0] - 1, p[1] - 8, 1.2);
+                d.fillStyle(0x78bd4d, 1);
+            }
+        }
+    }
+
+    desenharLavanda(d, estado, variante) {
+        var hastes = estado === 2 ? 4 : (estado === 3 ? 7 : 10);
+        d.fillStyle(0x2f4d2d, 0.25);
+        d.fillEllipse(0, 8, 34, 10);
+
+        for (var i = 0; i < hastes; i++) {
+            var ox = -15 + i * (30 / Math.max(1, hastes - 1));
+            var h = 18 + ((i + variante) % 4) * 5 + estado * 3;
+            d.lineStyle(2, 0x577f42, 1);
+            d.beginPath(); d.moveTo(0, 6); d.lineTo(ox, -h); d.strokePath();
+            if (estado >= 3) {
+                d.fillStyle(0x9b75c9, 1);
+                d.fillCircle(ox, -h, 3);
+                d.fillCircle(ox - 2, -h + 5, 3);
+                d.fillCircle(ox + 2, -h + 9, 3);
+            }
+        }
+    }
+
+    desenharGirassol(d, estado, variante) {
+        var flores = estado >= 5 ? 3 : (estado >= 4 ? 2 : 1);
+        var offsets = flores === 1 ? [0] : (flores === 2 ? [-8, 9] : [-12, 0, 12]);
+        d.fillStyle(0x304f2b, 0.25);
+        d.fillEllipse(0, 8, 34, 10);
+
+        for (var i = 0; i < offsets.length; i++) {
+            var ox = offsets[i];
+            var h = 21 + estado * 5 + ((i + variante) % 2) * 4;
+            d.lineStyle(3, 0x7f943f, 1);
+            d.beginPath(); d.moveTo(ox, 6); d.lineTo(ox, -h); d.strokePath();
+            d.fillStyle(0x85ad54, 1);
+            d.fillEllipse(ox - 7, -h * 0.45, 12, 7);
+            d.fillEllipse(ox + 7, -h * 0.58, 12, 7);
+            if (estado >= 4) {
+                d.fillStyle(0xf4c542, 1);
+                for (var p = 0; p < 8; p++) {
+                    var ang = p * Math.PI / 4;
+                    d.fillEllipse(ox + Math.cos(ang) * 7, -h + Math.sin(ang) * 7, 6, 4);
+                }
+                d.fillStyle(0x7c4a24, 1);
+                d.fillCircle(ox, -h, 6);
+                d.fillStyle(0x4f2f1b, 0.75);
+                d.fillCircle(ox, -h, 3);
+            }
+        }
+    }
+
+    desenharPlantaGenerica(d, estado, variante, fruto) {
+        var altura = estado === 2 ? 13 : (estado === 3 ? 19 : 25);
+        var corFolha = estado === 2 ? 0x8fcf70 : (estado === 3 ? 0x7fb45b : 0xa5b96a);
+        var corSombra = estado === 2 ? 0x4f7f3d : (estado === 3 ? 0x446a36 : 0x68713a);
+
+        d.fillStyle(corSombra, 0.35);
+        d.fillEllipse(0, 8, 22 + estado * 2, 8);
+        d.fillStyle(corFolha, 1);
+
+        if (variante === 0) {
+            d.fillRect(-1, -altura, 2, altura);
+            d.fillEllipse(-5, -altura + 2, 12, 8);
+            if (estado >= 3) d.fillEllipse(5, -altura - 2, 12, 8);
+            if (estado >= 4) d.fillEllipse(0, -altura - 8, 13, 9);
+        } else if (variante === 1) {
+            d.fillRect(-2, -altura + 3, 2, altura - 2);
+            d.fillRect(3, -altura + 6, 2, altura - 6);
+            d.fillEllipse(-7, -altura + 1, 13, 7);
+            d.fillEllipse(7, -altura + 6, 12, 7);
+            if (estado >= 4) d.fillEllipse(1, -altura - 8, 16, 10);
+        } else if (variante === 2) {
+            d.fillRect(-1, -altura + 2, 2, altura);
+            d.fillEllipse(-8, -altura + 4, 11, 9);
+            d.fillEllipse(8, -altura + 2, 11, 9);
+            if (estado >= 3) d.fillEllipse(0, -altura - 4, 12, 10);
+            if (estado >= 4) d.fillEllipse(-2, -altura - 12, 10, 8);
+        } else {
+            d.fillRect(-4, -altura + 5, 2, altura - 4);
+            d.fillRect(4, -altura + 3, 2, altura - 2);
+            d.fillEllipse(-8, -altura + 3, 10, 8);
+            d.fillEllipse(8, -altura, 10, 8);
+            if (estado >= 4) d.fillEllipse(0, -altura - 9, 15, 9);
+        }
+
+        if (estado >= 5) {
+            d.fillStyle(fruto || 0xd4a84f, 1);
+            d.fillCircle(-6, -altura - 5, 5);
+            d.fillCircle(6, -altura - 2, 4);
+            if (variante === 1 || variante === 3) d.fillCircle(0, -altura - 10, 4);
+            d.fillStyle(0xffffff, 0.32);
+            d.fillCircle(-8, -altura - 7, 2);
+        }
+    }
+
+    desenharPlanta(d, estado, tipo, variante, fruto) {
+        if (tipo === 'milho') {
+            this.desenharMilho(d, estado, variante);
+        } else if (tipo === 'morango') {
+            this.desenharMorango(d, estado, variante);
+        } else if (tipo === 'lavanda') {
+            this.desenharLavanda(d, estado, variante);
+        } else if (tipo === 'girassol') {
+            this.desenharGirassol(d, estado, variante);
+        } else {
+            this.desenharPlantaGenerica(d, estado, variante, fruto);
+        }
+    }
+
     drawTile(x, y) {
         var t  = this.gTiles[x][y];
         var d  = this.gDetail[x][y];
@@ -391,8 +592,10 @@ class CenaQuinta extends Phaser.Scene {
 
         if (isShop) {
             cTop = 0x164e63; cL = 0x0e3a4a; cR = 0x0a2c38;
+            cTop = COR.loja; cL = 0x224f42; cR = 0x17382f;
         } else if (!unlock) {
             cTop = 0x1a2535; cL = 0x111c28; cR = 0x0d1620; al = 0.8;
+            cTop = COR.bloqueado; cL = 0x23271d; cR = 0x1a1f18; al = 0.82;
         } else {
             var paleta = [
                 [COR.herva,     0x15803d, 0x0f6028],
@@ -401,6 +604,12 @@ class CenaQuinta extends Phaser.Scene {
                 [COR.crescendo, 0x65a30d, 0x4f7c0a],
                 [COR.maduro,    0x84cc16, 0x65a30d],
                 [COR.colhivel,  0xca8a04, 0x9a6703],
+                [COR.herva,     0x3f8e4c, 0x2f6f3c],
+                [COR.semente,   0x3d281a, 0x2d1e14],
+                [COR.broto,     0x5f8f3f, 0x486e32],
+                [COR.crescendo, 0x728f41, 0x597034],
+                [COR.maduro,    0x8c9447, 0x6f763a],
+                [COR.colhivel,  0xa87932, 0x805f2b],
             ];
             var c = paleta[Math.min(estado, 5)];
             cTop = c[0]; cL = c[1]; cR = c[2];
@@ -422,6 +631,7 @@ class CenaQuinta extends Phaser.Scene {
         t.closePath(); t.fillPath();
 
         t.lineStyle(1, 0x000000, 0.15);
+        t.lineStyle(1, 0x1f3d2c, 0.24);
         t.beginPath();
         t.moveTo(0, -TAM*0.5); t.lineTo(TAM, 0); t.lineTo(0, TAM*0.5); t.lineTo(-TAM, 0);
         t.closePath(); t.strokePath();
@@ -429,6 +639,7 @@ class CenaQuinta extends Phaser.Scene {
         if (unlock && !isShop) {
             if (tileEmAreaAspersor(x, y)) {
                 d.lineStyle(1, 0x38bdf8, 0.25);
+                d.lineStyle(1, COR.regado, 0.32);
                 d.beginPath();
                 d.moveTo(0, -TAM*0.35); d.lineTo(TAM*0.68, 0); d.lineTo(0, TAM*0.35); d.lineTo(-TAM*0.68, 0);
                 d.closePath(); d.strokePath();
@@ -444,13 +655,18 @@ class CenaQuinta extends Phaser.Scene {
                 d.fillStyle(0x86efac, 1); d.fillRect(-1, -25, 2, 21); d.fillEllipse(-7, -21, 16, 11); d.fillEllipse(5, -24, 14, 10); d.fillEllipse(-1, -27, 13, 9);
             } else if (estado >= 5) {
                 var cul = CULTURAS[G.tipo[x][y] || 'girassol'];
+            } else if (estado >= 2) {
+                var tipoPlanta = G.tipo[x][y] || 'girassol';
+                var cul = CULTURAS[tipoPlanta];
                 var fc = cul.fruto || 0xf97316;
                 d.fillStyle(0x86efac, 1); d.fillRect(-1, -25, 2, 21); d.fillEllipse(-7, -21, 16, 11); d.fillEllipse(5, -24, 14, 10);
                 d.fillStyle(fc, 1); d.fillCircle(-5, -27, 6); d.fillCircle(6, -23, 5);
                 d.fillStyle(0xffffff, 0.35); d.fillCircle(-7, -29, 3);
+                this.desenharPlanta(d, estado, tipoPlanta, this.variantePlanta(x, y, tipoPlanta), fc);
             }
             if (regado && estado < 5) {
                 d.fillStyle(0x38bdf8, 0.85); d.fillEllipse(15, -16, 7, 9); d.fillTriangle(11,-13, 19,-13, 15,-21);
+                d.fillStyle(COR.regado, 0.85); d.fillEllipse(15, -16, 7, 9); d.fillTriangle(11,-13, 19,-13, 15,-21);
             }
             if (temAspersorNoTile(x, y)) {
                 d.fillStyle(0x0f172a, 0.45);
@@ -582,6 +798,8 @@ class CenaQuinta extends Phaser.Scene {
         var perp = { x: -dir.y, y: dir.x };
         var arado = this.posArado();
         var pontos = [
+            { x: this.tLogico.x, y: this.tLogico.y },
+            { x: arado.x, y: arado.y },
             { x: arado.x + perp.x, y: arado.y + perp.y },
             { x: arado.x - perp.x, y: arado.y - perp.y },
             { x: arado.x + tras.x + perp.x, y: arado.y + tras.y + perp.y },
@@ -592,6 +810,10 @@ class CenaQuinta extends Phaser.Scene {
         for (var i = 0; i < pontos.length; i++) {
             var p = pontos[i];
             if (p.x >= 0 && p.x < COLS && p.y >= 0 && p.y < ROWS && !(p.x === 0 && p.y === 0)) {
+            var repetido = out.some(function(alvo) {
+                return alvo.x === p.x && alvo.y === p.y;
+            });
+            if (p.x >= 0 && p.x < COLS && p.y >= 0 && p.y < ROWS && !repetido) {
                 out.push(p);
             }
         }
@@ -772,6 +994,27 @@ class CenaQuinta extends Phaser.Scene {
         }
     }
 
+    passarDia() {
+        var imposto = Math.min(Math.floor(G.moedas * 0.04), 400 + G.dia * 100);
+        var racao = custoRacaoGalinhas();
+        var rendimento = rendimentoDiario();
+        G.dia++;
+        G.aduboRestante = 2;
+        G.combo = 0;
+        novoEventoDia();
+        novoContrato();
+        G.regaRestante = 5 + (G.eventoDia.rega || 0);
+        G.moedas -= imposto + racao;
+        G.moedas += rendimento;
+        this._ciclosNoDia = 0;
+        this.updateUI();
+        toast('📅 Dia ' + G.dia + ' — ' + G.eventoDia.msg, 'ok', 2800);
+        if (imposto > 0) setTimeout(function() { toast('🏛️ Impostos: -' + imposto + '€', 'war', 2500); }, 400);
+        if (racao > 0) setTimeout(function() { toast('🐔 Ração: -' + racao + '€', 'war', 2500); }, 700);
+        if (rendimento > 0) setTimeout(function() { toast('💼 Rendimento: +' + rendimento + '€', 'ok', 2500); }, 1000);
+        guardarJogo();
+    }
+
     update(t, dt) {
         
         if (Phaser.Input.Keyboard.JustDown(this.teclaEsc)) {
@@ -823,6 +1066,7 @@ class CenaQuinta extends Phaser.Scene {
         }
 
         if (G.animais) {
+        if (G.animais && terrenoTodoDesbloqueado()) {
             var animais = this.posAnimais();
             if (MaquinaEstados.podeConduzir() &&
                 this.tLogico.x === animais.x && this.tLogico.y === animais.y &&
@@ -858,6 +1102,12 @@ class CenaQuinta extends Phaser.Scene {
             autoRegaAspersores(this);
             var colhidasAuto = autoColheitaEmpregados(this);
             if (!colhidasAuto) this.passeioEmpregados();
+
+            this._ciclosNoDia = (this._ciclosNoDia || 0) + 1;
+            if (this._ciclosNoDia >= 25) {
+                this.passarDia();
+                return;
+            }
         }
 
         var tx = this.tLogico.x, ty = this.tLogico.y;
@@ -997,6 +1247,7 @@ class CenaQuinta extends Phaser.Scene {
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.kN)) {
+<<<<<<< Updated upstream
             var imposto = Math.min(Math.floor(G.moedas * 0.04), 400 + G.dia * 100);
             var racao = custoRacaoGalinhas();
             var rendimento = rendimentoDiario();
@@ -1015,6 +1266,9 @@ class CenaQuinta extends Phaser.Scene {
             if (racao > 0) setTimeout(function() { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('racao', 'Ração: -{valor}€', { valor: racao }) : 'Ração: -' + racao + '€'), 'war', 2500); }, 700);
             if (rendimento > 0) setTimeout(function() { toast('💼 ' + (window.IdiomasJogo ? IdiomasJogo.msg('rendimento', 'Rendimento: +{valor}€', { valor: rendimento }) : 'Rendimento: +' + rendimento + '€'), 'ok', 2500); }, 1000);
             guardarJogo();
+=======
+            this.passarDia();
+>>>>>>> Stashed changes
         }
 
         if (t < this._proximoMov) return;
