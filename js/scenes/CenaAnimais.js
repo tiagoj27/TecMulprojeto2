@@ -9,7 +9,6 @@ class CenaAnimais extends Phaser.Scene {
 
     iso(gx, gy) {
         var tam = 54;
-        var ox = 520, oy = 210;
         var ox = JOGO_CENTRO_X, oy = JOGO_CENTRO_Y - 165;
         return {
             x: ox + (gx - gy) * tam,
@@ -190,40 +189,26 @@ class CenaAnimais extends Phaser.Scene {
 
         var bg = this.add.graphics();
         bg.fillStyle(0x060d1a, 0.94);
-        bg.fillRoundedRect(610, 110, 360, 260, 14);
         bg.fillRoundedRect(lojaX, 110, 360, 260, 14);
         bg.lineStyle(1, 0x1e293b, 0.9);
-        bg.strokeRoundedRect(610, 110, 360, 260, 14);
+        bg.strokeRoundedRect(lojaX, 110, 360, 260, 14);
         bg.lineStyle(2, 0xfbbf24, 0.6);
-        bg.beginPath(); bg.moveTo(630, 150); bg.lineTo(950, 150); bg.strokePath();
         bg.beginPath(); bg.moveTo(lojaX + 20, 150); bg.lineTo(lojaX + 340, 150); bg.strokePath();
 
-<<<<<<< Updated upstream
-        var title = this.add.text(790, 130, '🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimais') : 'LOJA DOS ANIMAIS'), {
-=======
-        var title = this.add.text(lojaTituloX, 130, '🛒 LOJA DOS ANIMAIS', {
->>>>>>> Stashed changes
+var title = this.add.text(lojaTituloX, 130, '🛒 ' + (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimais') : 'LOJA DOS ANIMAIS'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '15px',
             fontStyle: '900',
             color: '#f8fafc'
         }).setOrigin(0.5);
 
-<<<<<<< Updated upstream
-        var info = this.add.text(630, 164, (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimaisInfo') : 'Clique para comprar. A produção só acontece se alimentares.'), {
-=======
-        var info = this.add.text(lojaX + 20, 164, 'Clique para comprar. A produção só acontece se alimentares.', {
->>>>>>> Stashed changes
+var info = this.add.text(lojaX + 20, 164, (window.IdiomasJogo ? IdiomasJogo.t('lojaAnimaisInfo') : 'Clique para comprar. A produção só acontece se alimentares.'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '11px',
             color: '#64748b'
         });
 
-<<<<<<< Updated upstream
-        var btn1 = this.add.text(630, 210, '🐔 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarGalinha') : '+1 Galinha — 250€'), {
-=======
-        var btn1 = this.add.text(lojaX + 20, 210, '🐔 +1 Galinha — 250€', {
->>>>>>> Stashed changes
+var btn1 = this.add.text(lojaX + 20, 210, '🐔 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarGalinha') : '+1 Galinha — 250€'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '14px',
             fontStyle: 'bold',
@@ -233,11 +218,7 @@ class CenaAnimais extends Phaser.Scene {
         }).setDepth(100006).setInteractive({ useHandCursor: true });
         btn1.on('pointerdown', () => this.comprarAnimal('galinha'));
 
-<<<<<<< Updated upstream
-        var btn2 = this.add.text(630, 270, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarVaca') : '+1 Vaca — 650€'), {
-=======
-        var btn2 = this.add.text(lojaX + 20, 270, '🐄 +1 Vaca — 650€', {
->>>>>>> Stashed changes
+var btn2 = this.add.text(lojaX + 20, 270, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('comprarVaca') : '+1 Vaca — 650€'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '14px',
             fontStyle: 'bold',
@@ -247,11 +228,7 @@ class CenaAnimais extends Phaser.Scene {
         }).setDepth(100006).setInteractive({ useHandCursor: true });
         btn2.on('pointerdown', () => this.comprarAnimal('vaca'));
 
-<<<<<<< Updated upstream
-        var hint = this.add.text(790, 350, (window.IdiomasJogo ? IdiomasJogo.t('sairLojaAnimais') : 'Sai da loja ao mover para fora da tile') + ' 🛒', {
-=======
-        var hint = this.add.text(lojaTituloX, 350, 'Sai da loja ao mover para fora da tile 🛒', {
->>>>>>> Stashed changes
+var hint = this.add.text(lojaTituloX, 350, (window.IdiomasJogo ? IdiomasJogo.t('sairLojaAnimais') : 'Sai da loja ao mover para fora da tile') + ' 🛒', {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '10px',
             color: '#475569'
@@ -281,6 +258,9 @@ class CenaAnimais extends Phaser.Scene {
         else G.animaisData.vacas.qtd++;
         if (window.AudioJogo) AudioJogo.sfx('buy');
         toast('✅ ' + (window.IdiomasJogo ? IdiomasJogo.msg('compraFeita', 'Compra feita!') : 'Compra feita!'), 'ok');
+        for (var x = 0; x < this.aCols; x++) {
+            for (var y = 0; y < this.aRows; y++) this.drawTile(x, y);
+        }
         this.updateHUD();
         guardarJogo();
     }
@@ -326,39 +306,43 @@ class CenaAnimais extends Phaser.Scene {
         var s = escala || 1;
         var ox = offX || 0, oy = (offY !== undefined ? offY : -8);
 
-        d.fillStyle(0x0f172a, 0.25);
-        d.fillEllipse(ox, 16, 34 * s, 14 * s);
+        d.fillStyle(0x0f172a, 0.22);
+        d.fillEllipse(ox, 17, 36 * s, 13 * s);
 
-        d.fillStyle(0xf8fafc, 1);
-        d.fillEllipse(ox, oy, 24 * s, 18 * s);
-        d.fillEllipse(10 * s, oy - 7 * s, 14 * s, 12 * s);
+        d.fillStyle(0xfefce8, 1);
+        d.fillEllipse(ox - 4 * s, oy + 2 * s, 26 * s, 20 * s);
+        d.fillStyle(0xffffff, 1);
+        d.fillEllipse(ox + 10 * s, oy - 8 * s, 15 * s, 14 * s);
+        d.fillStyle(0xf1f5f9, 0.95);
+        d.fillEllipse(ox - 9 * s, oy + 3 * s, 14 * s, 10 * s);
+        d.lineStyle(1.6 * s, 0xe2e8f0, 0.9);
+        d.strokeEllipse(ox - 4 * s, oy + 2 * s, 26 * s, 20 * s);
 
-        d.fillStyle(0xe2e8f0, 0.95);
-        d.fillEllipse(-6 * s, oy + 2 * s, 14 * s, 10 * s);
+        d.fillStyle(0xef4444, 1);
+        d.fillCircle(ox + 10 * s, oy - 16 * s, 3.8 * s);
+        d.fillCircle(ox + 14 * s, oy - 15 * s, 3.2 * s);
+        d.fillCircle(ox + 7 * s, oy - 14 * s, 3 * s);
 
-        d.fillStyle(0xef4444, 0.95);
-        d.fillCircle(12 * s, oy - 14 * s, 4 * s);
-        d.fillCircle(9 * s, oy - 14 * s, 3 * s);
-
-        d.fillStyle(0xf97316, 0.98);
-        d.fillTriangle(16 * s, oy - 6 * s, 26 * s, oy - 2 * s, 16 * s, oy + 2 * s);
-
+        d.fillStyle(0xf59e0b, 1);
+        d.fillTriangle(ox + 17 * s, oy - 8 * s, ox + 27 * s, oy - 5 * s, ox + 17 * s, oy - 2 * s);
         d.fillStyle(0x111827, 0.95);
-        d.fillCircle(14 * s, oy - 9 * s, 1.6 * s);
+        d.fillCircle(ox + 13 * s, oy - 10 * s, 1.6 * s);
 
-        d.lineStyle(2 * s, 0xfbbf24, 0.9);
-        d.beginPath(); d.moveTo(-6 * s, oy + 10 * s); d.lineTo(-8 * s, oy + 16 * s); d.strokePath();
-        d.beginPath(); d.moveTo(2 * s, oy + 10 * s); d.lineTo(0 * s, oy + 16 * s); d.strokePath();
+        d.lineStyle(2 * s, 0xf59e0b, 0.95);
+        d.beginPath(); d.moveTo(ox - 7 * s, oy + 12 * s); d.lineTo(ox - 9 * s, oy + 18 * s); d.strokePath();
+        d.beginPath(); d.moveTo(ox + 2 * s, oy + 12 * s); d.lineTo(ox, oy + 18 * s); d.strokePath();
 
         if (alimentada) {
-            d.fillStyle(0x22c55e, 0.9);
-            d.fillCircle(-18 * s, oy - 2 * s, 4 * s);
+            d.fillStyle(0x22c55e, 0.95);
+            d.fillCircle(ox - 20 * s, oy - 2 * s, 4 * s);
+            d.lineStyle(1.5 * s, 0x166534, 0.8);
+            d.beginPath(); d.moveTo(ox - 22 * s, oy - 1 * s); d.lineTo(ox - 17 * s, oy - 5 * s); d.strokePath();
         }
         if (temProduto) {
-            d.fillStyle(0xfacc15, 0.98);
-            d.fillEllipse(-14 * s, oy + 12 * s, 10 * s, 8 * s);
-            d.fillStyle(0xffffff, 0.35);
-            d.fillCircle(-16 * s, oy + 10 * s, 2 * s);
+            d.fillStyle(0xfef3c7, 1);
+            d.fillEllipse(ox - 15 * s, oy + 14 * s, 10 * s, 8 * s);
+            d.fillStyle(0xffffff, 0.5);
+            d.fillCircle(ox - 17 * s, oy + 12 * s, 2 * s);
         }
     }
 
@@ -366,54 +350,86 @@ class CenaAnimais extends Phaser.Scene {
         var s = escala || 1;
         var ox = offX || 0, oy = (offY !== undefined ? offY : -10);
 
-        d.fillStyle(0x0f172a, 0.25);
-        d.fillEllipse(ox, 16, 44 * s, 16 * s);
+        d.fillStyle(0x0f172a, 0.24);
+        d.fillEllipse(ox, 18, 52 * s, 16 * s);
 
         d.fillStyle(0xf8fafc, 1);
-        d.fillRoundedRect(-18 * s, oy - 8 * s, 36 * s, 24 * s, 8 * s);
-        d.fillRoundedRect(10 * s, oy - 16 * s, 20 * s, 18 * s, 7 * s);
+        d.fillRoundedRect(ox - 22 * s, oy - 9 * s, 43 * s, 25 * s, 9 * s);
+        d.fillRoundedRect(ox + 9 * s, oy - 18 * s, 24 * s, 20 * s, 8 * s);
+        d.lineStyle(1.5 * s, 0xcbd5e1, 0.9);
+        d.strokeRoundedRect(ox - 22 * s, oy - 9 * s, 43 * s, 25 * s, 9 * s);
 
-        d.fillStyle(0x111827, 0.75);
-        d.fillEllipse(-6 * s, oy - 2 * s, 14 * s, 10 * s);
-        d.fillEllipse(2 * s, oy + 6 * s, 10 * s, 8 * s);
+        d.fillStyle(0x111827, 0.82);
+        d.fillEllipse(ox - 10 * s, oy - 2 * s, 13 * s, 10 * s);
+        d.fillEllipse(ox + 2 * s, oy + 7 * s, 11 * s, 8 * s);
+        d.fillEllipse(ox + 18 * s, oy - 11 * s, 9 * s, 7 * s);
 
-        d.fillStyle(0x0f172a, 0.22);
-        d.fillRoundedRect(14 * s, oy - 6 * s, 12 * s, 10 * s, 5 * s);
-
-        d.fillStyle(0x111827, 0.9);
-        d.fillCircle(22 * s, oy - 10 * s, 1.7 * s);
-        d.fillCircle(28 * s, oy - 10 * s, 1.7 * s);
-
-        d.fillStyle(0xfca5a5, 0.95);
-        d.fillEllipse(24 * s, oy - 2 * s, 16 * s, 10 * s);
+        d.fillStyle(0xfca5a5, 1);
+        d.fillEllipse(ox + 24 * s, oy - 2 * s, 17 * s, 10 * s);
         d.fillStyle(0x111827, 0.55);
-        d.fillCircle(20 * s, oy - 2 * s, 1.3 * s);
-        d.fillCircle(28 * s, oy - 2 * s, 1.3 * s);
+        d.fillCircle(ox + 20 * s, oy - 2 * s, 1.4 * s);
+        d.fillCircle(ox + 28 * s, oy - 2 * s, 1.4 * s);
+        d.fillStyle(0x111827, 1);
+        d.fillCircle(ox + 19 * s, oy - 11 * s, 1.7 * s);
+        d.fillCircle(ox + 28 * s, oy - 11 * s, 1.7 * s);
 
-        d.lineStyle(3 * s, 0xe2e8f0, 0.9);
-        d.beginPath(); d.moveTo(14 * s, oy - 16 * s); d.lineTo(10 * s, oy - 22 * s); d.strokePath();
-        d.beginPath(); d.moveTo(30 * s, oy - 16 * s); d.lineTo(34 * s, oy - 22 * s); d.strokePath();
+        d.fillStyle(0xfef3c7, 1);
+        d.fillTriangle(ox + 13 * s, oy - 17 * s, ox + 8 * s, oy - 24 * s, ox + 16 * s, oy - 20 * s);
+        d.fillTriangle(ox + 30 * s, oy - 17 * s, ox + 36 * s, oy - 24 * s, ox + 28 * s, oy - 20 * s);
+        d.fillStyle(0xf8fafc, 1);
+        d.fillEllipse(ox + 8 * s, oy - 11 * s, 7 * s, 10 * s);
+        d.fillEllipse(ox + 34 * s, oy - 11 * s, 7 * s, 10 * s);
 
         d.fillStyle(0x334155, 1);
-        d.fillRect(-14 * s, oy + 14 * s, 5 * s, 10 * s);
-        d.fillRect(-2 * s, oy + 14 * s, 5 * s, 10 * s);
-        d.fillRect(10 * s, oy + 14 * s, 5 * s, 10 * s);
-        d.fillRect(22 * s, oy + 14 * s, 5 * s, 10 * s);
+        d.fillRect(ox - 18 * s, oy + 14 * s, 5 * s, 11 * s);
+        d.fillRect(ox - 5 * s, oy + 14 * s, 5 * s, 11 * s);
+        d.fillRect(ox + 8 * s, oy + 14 * s, 5 * s, 11 * s);
+        d.fillRect(ox + 22 * s, oy + 2 * s, 5 * s, 12 * s);
 
-        d.lineStyle(2 * s, 0x111827, 0.7);
-        d.beginPath(); d.moveTo(-18 * s, oy - 2 * s); d.lineTo(-28 * s, oy - 10 * s); d.strokePath();
-        d.fillStyle(0x111827, 0.75);
-        d.fillCircle(-28 * s, oy - 10 * s, 2.2 * s);
+        d.lineStyle(2 * s, 0x111827, 0.72);
+        d.beginPath(); d.moveTo(ox - 22 * s, oy - 2 * s); d.lineTo(ox - 31 * s, oy - 11 * s); d.strokePath();
+        d.fillStyle(0x111827, 0.78);
+        d.fillCircle(ox - 32 * s, oy - 11 * s, 2.3 * s);
 
         if (alimentada) {
-            d.fillStyle(0x22c55e, 0.9);
-            d.fillCircle(-22 * s, oy - 2 * s, 4 * s);
+            d.fillStyle(0x22c55e, 0.95);
+            d.fillCircle(ox - 24 * s, oy + 2 * s, 4 * s);
+            d.lineStyle(1.4 * s, 0x166534, 0.85);
+            d.beginPath(); d.moveTo(ox - 26 * s, oy + 2 * s); d.lineTo(ox - 21 * s, oy - 2 * s); d.strokePath();
         }
         if (temProduto) {
-            d.fillStyle(0x38bdf8, 0.96);
-            d.fillRoundedRect(-8 * s, oy + 10 * s, 16 * s, 10 * s, 4 * s);
-            d.fillStyle(0xffffff, 0.25);
-            d.fillCircle(-3 * s, oy + 12 * s, 2.2 * s);
+            d.fillStyle(0x93c5fd, 1);
+            d.fillRoundedRect(ox - 8 * s, oy + 10 * s, 17 * s, 11 * s, 4 * s);
+            d.fillStyle(0xffffff, 0.35);
+            d.fillCircle(ox - 3 * s, oy + 12 * s, 2.2 * s);
+        }
+    }
+
+    desenharDetalhesRecinto(d, isGalinhas, x, y) {
+        if (isGalinhas) {
+            d.lineStyle(2, 0xfde68a, 0.45);
+            var palha = [[-28, -2], [-14, 9], [6, -8], [20, 7], [28, -1]];
+            for (var i = 0; i < palha.length; i++) {
+                var px = palha[i][0], py = palha[i][1];
+                d.beginPath(); d.moveTo(px - 5, py); d.lineTo(px + 5, py + 4); d.strokePath();
+            }
+            d.fillStyle(0xfef3c7, 0.7);
+            d.fillEllipse(-30, 10, 9, 6);
+            return;
+        }
+
+        d.lineStyle(2, 0xbbf7d0, 0.45);
+        var relva = [[-26, 5], [-14, -3], [2, 8], [14, -5], [27, 4]];
+        for (var j = 0; j < relva.length; j++) {
+            var gx = relva[j][0], gy = relva[j][1];
+            d.beginPath(); d.moveTo(gx, gy + 6); d.lineTo(gx + 2, gy); d.strokePath();
+            d.beginPath(); d.moveTo(gx + 4, gy + 6); d.lineTo(gx + 1, gy + 1); d.strokePath();
+        }
+        if ((x + y) % 2 === 0) {
+            d.fillStyle(0x8b5a2b, 0.85);
+            d.fillRoundedRect(-34, -9, 14, 10, 3);
+            d.fillStyle(0xfbbf24, 0.55);
+            d.fillEllipse(-27, -5, 11, 5);
         }
     }
 
@@ -429,10 +445,29 @@ class CenaAnimais extends Phaser.Scene {
         d.clear();
 
         var isGalinhas = x < Math.floor(this.aCols / 2);
-        var top = isGalinhas ? 0x1f3b5b : 0x3a240e;
-        var line = isGalinhas ? 0x60a5fa : 0xfbbf24;
+        var top = isGalinhas ? 0xc9983f : 0x62a744;
+        var sideA = isGalinhas ? 0x8a5a22 : 0x3c6f31;
+        var sideB = isGalinhas ? 0x70451c : 0x2f5729;
+        var line = isGalinhas ? 0xfacc15 : 0x86efac;
 
-        g.lineStyle(2, 0x0b1220, 0.9);
+        g.fillStyle(sideA, 1);
+        g.beginPath();
+        g.moveTo(-tam, 0);
+        g.lineTo(0, tam * 0.5);
+        g.lineTo(0, tam * 0.74);
+        g.lineTo(-tam, tam * 0.24);
+        g.closePath();
+        g.fillPath();
+        g.fillStyle(sideB, 1);
+        g.beginPath();
+        g.moveTo(tam, 0);
+        g.lineTo(0, tam * 0.5);
+        g.lineTo(0, tam * 0.74);
+        g.lineTo(tam, tam * 0.24);
+        g.closePath();
+        g.fillPath();
+
+        g.lineStyle(2, isGalinhas ? 0x6b4218 : 0x285221, 0.95);
         g.fillStyle(top, 1);
         g.beginPath();
         g.moveTo(0, -tam * 0.5);
@@ -444,9 +479,16 @@ class CenaAnimais extends Phaser.Scene {
         g.strokePath();
 
         d.lineStyle(2, line, 0.24);
-        d.strokeEllipse(0, 4, tam * 1.38, tam * 0.7);
-        d.fillStyle(0x000000, 0.06);
-        d.fillEllipse(0, 12, 44, 18);
+        d.strokeEllipse(0, 4, tam * 1.42, tam * 0.72);
+        d.fillStyle(0x000000, 0.08);
+        d.fillEllipse(0, 14, 45, 17);
+        this.desenharDetalhesRecinto(d, isGalinhas, x, y);
+
+        if (x === 2) {
+            d.lineStyle(3, 0x6b3f1d, 0.58);
+            d.beginPath(); d.moveTo(36, -16); d.lineTo(48, -10); d.strokePath();
+            d.beginPath(); d.moveTo(18, -7); d.lineTo(30, -1); d.strokePath();
+        }
 
         var a = G.animaisData;
         var an = this.animalNoTile(x, y);
@@ -500,21 +542,14 @@ class CenaAnimais extends Phaser.Scene {
         this.kR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
         this.kEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
-<<<<<<< Updated upstream
-        this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
-        this.add.rectangle(500, 375, 1000, 750, 0x0b1220, 0.18);
-        this.add.rectangle(500, 375, 920, 650, 0x000000, 0.12);
-        this.add.text(780, 54, '🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('animais').toUpperCase() : 'ANIMAIS'), {
-=======
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a);
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x0b1220, 0.18);
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA - 80, JOGO_ALTURA - 80, 0x000000, 0.12);
-        this.add.text(JOGO_LARGURA - 220, 54, '🐄 ANIMAIS', {
->>>>>>> Stashed changes
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x142014);
+        this.add.rectangle(JOGO_CENTRO_X - 240, JOGO_CENTRO_Y + 165, JOGO_LARGURA * 0.7, 360, 0x3b2a15, 0.34);
+        this.add.rectangle(JOGO_CENTRO_X + 260, JOGO_CENTRO_Y + 155, JOGO_LARGURA * 0.72, 360, 0x244b22, 0.44);
+        this.add.text(JOGO_LARGURA - 220, 54, (window.IdiomasJogo ? IdiomasJogo.t('animais').toUpperCase() : 'ANIMAIS'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '22px',
             fontStyle: '900',
-            color: '#e2e8f0'
+            color: '#fef3c7'
         }).setOrigin(0.5).setDepth(99999);
 
         this.initAnimaisState();
@@ -570,8 +605,6 @@ class CenaAnimais extends Phaser.Scene {
 
         this._cicloInicio = this.time.now;
         this._proximoCiclo = this.time.now + CICLO_MS * this.animaisCicloMult();
-
-        toast('🐔🐄 ' + (window.IdiomasJogo ? IdiomasJogo.t('animais') : 'Animais') + '!', 'ok', 3200);
     }
 
     aplicarCiclo() {
@@ -589,20 +622,31 @@ class CenaAnimais extends Phaser.Scene {
         for (var x = 0; x < this.aCols; x++) for (var y = 0; y < this.aRows; y++) this.drawTile(x, y);
     }
 
+    toastAnimais(msg, tipo, dur, chave) {
+        var agora = this.time ? this.time.now : Date.now();
+        var id = chave || msg;
+        if (this._toastAnimaisId === id && agora - (this._toastAnimaisTempo || 0) < 1200) return;
+        this._toastAnimaisId = id;
+        this._toastAnimaisTempo = agora;
+        toast(msg, tipo, dur || 1500);
+    }
+
     alimentarZona(z) {
         var a = G.animaisData;
         if (z === 'galinha') {
-            if (a.galinhas.qtd <= 0) { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semGalinhas', 'Não tens galinhas') : 'Não tens galinhas'), 'war'); return; }
-            if (a.galinhas.fed >= a.galinhas.qtd) { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('galinhasTodas', 'Já estão todas alimentadas') : 'Já estão todas alimentadas'), 'war'); return; }
-            a.galinhas.fed++;
+            if (a.galinhas.qtd <= 0) { this.toastAnimais('Nao tens galinhas', 'war', 1400, 'sem-galinhas'); return; }
+            var faltamG = Math.max(0, (a.galinhas.qtd || 0) - (a.galinhas.fed || 0));
+            if (faltamG <= 0) { this.toastAnimais('As galinhas ja estao todas alimentadas', 'war', 1400, 'galinhas-todas'); return; }
+            a.galinhas.fed = a.galinhas.qtd;
             if (window.AudioJogo) AudioJogo.sfx('animal');
-            toast('🐔 Alimentaste 1 galinha (' + a.galinhas.fed + '/' + a.galinhas.qtd + ')', 'ok');
+            this.toastAnimais('Alimentaste todas as galinhas (' + a.galinhas.fed + '/' + a.galinhas.qtd + ')', 'ok', 1500, 'feed-galinhas');
         } else if (z === 'vaca') {
-            if (a.vacas.qtd <= 0) { toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.msg('semVacas', 'Não tens vacas') : 'Não tens vacas'), 'war'); return; }
-            if (a.vacas.fed >= a.vacas.qtd) { toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.msg('vacasTodas', 'Já estão todas alimentadas') : 'Já estão todas alimentadas'), 'war'); return; }
-            a.vacas.fed++;
+            if (a.vacas.qtd <= 0) { this.toastAnimais('Nao tens vacas', 'war', 1400, 'sem-vacas'); return; }
+            var faltamV = Math.max(0, (a.vacas.qtd || 0) - (a.vacas.fed || 0));
+            if (faltamV <= 0) { this.toastAnimais('As vacas ja estao todas alimentadas', 'war', 1400, 'vacas-todas'); return; }
+            a.vacas.fed = a.vacas.qtd;
             if (window.AudioJogo) AudioJogo.sfx('animal');
-            toast('🐄 Alimentaste 1 vaca (' + a.vacas.fed + '/' + a.vacas.qtd + ')', 'ok');
+            this.toastAnimais('Alimentaste todas as vacas (' + a.vacas.fed + '/' + a.vacas.qtd + ')', 'ok', 1500, 'feed-vacas');
         }
         this.updateHUD();
         guardarJogo();
@@ -654,24 +698,20 @@ class CenaAnimais extends Phaser.Scene {
         var moveUp = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.kW);
         var moveDown = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.kS);
 
-        if (Phaser.Input.Keyboard.JustDown(this.keys.left)) {
         if (moveLeft) {
             if (this.sel.x > 0) { this.sel.x--; this.trDir = { x: -1, y: 0 }; moved = true; }
             else if (this.sel.x === 0 && this.sel.y === saida.y) { this.sel.x = saida.x; this.trDir = { x: -1, y: 0 }; moved = true; }
             else if (this.sel.x === loja.x && this.sel.y === loja.y) { this.sel.x = this.aCols - 1; this.sel.y = 0; this.trDir = { x: -1, y: 0 }; moved = true; }
         }
-        if (Phaser.Input.Keyboard.JustDown(this.keys.right)) {
         if (moveRight) {
             if (this.sel.x === saida.x && this.sel.y === saida.y) { this.sel.x = 0; this.trDir = { x: 1, y: 0 }; moved = true; }
             else if (this.sel.x === this.aCols - 1 && this.sel.y === 0) { this.sel.x = loja.x; this.sel.y = loja.y; this.trDir = { x: 1, y: 0 }; moved = true; }
             else if (this.sel.x < this.aCols - 1) { this.sel.x++; this.trDir = { x: 1, y: 0 }; moved = true; }
         }
-        if (Phaser.Input.Keyboard.JustDown(this.keys.up)) {
         if (moveUp) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y > 0) { this.sel.y--; this.trDir = { x: 0, y: -1 }; moved = true; }
         }
-        if (Phaser.Input.Keyboard.JustDown(this.keys.down)) {
         if (moveDown) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y < this.aRows - 1) { this.sel.y++; this.trDir = { x: 0, y: 1 }; moved = true; }
@@ -698,15 +738,8 @@ class CenaAnimais extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.kSpace)) {
             if (this.ehLojaSel() || this.ehSaidaSel()) return;
             var an = this.animalNoTile(this.sel.x, this.sel.y);
-            if (!an) { toast('— ' + (window.IdiomasJogo ? IdiomasJogo.msg('semAnimaisAqui', 'Aqui não há animais') : 'Aqui não há animais'), 'war'); return; }
-            var a = G.animaisData;
-            if (an.tipo === 'galinha') {
-                if (an.idx < (a.galinhas.fed || 0)) { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('galinhasTodas', 'Já está alimentada') : 'Já está alimentada'), 'war'); return; }
-                this.alimentarZona('galinha');
-            } else {
-                if (an.idx < (a.vacas.fed || 0)) { toast('🐄 ' + (window.IdiomasJogo ? IdiomasJogo.msg('vacasTodas', 'Já está alimentada') : 'Já está alimentada'), 'war'); return; }
-                this.alimentarZona('vaca');
-            }
+            if (!an) { this.toastAnimais('Aqui nao ha animais', 'war', 1200, 'sem-animais-aqui'); return; }
+            this.alimentarZona(an.tipo);
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.kR)) {

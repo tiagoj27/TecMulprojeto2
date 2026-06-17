@@ -13,21 +13,21 @@ var G = {
     contrato: null, conquistas: null,
     arado: false, aradoAcoplado: false, ampliacoesTerreno: 0,
     pomar: false, pomarPlantas: null, pomarTipo: null, pomarRega: null,
-    animais: false, animaisData: null
+    animais: false, animaisData: null, sementesCompradas: null
     , sementeCampoAtiva: 'girassol', sementePomarAtiva: 'cereja'
 };
 
 var LOJA_CATALOGO = [
-    { id: 'trator2', emoji: '🚜', nome: 'Trator Turbo', max: 1, custoBase: 500, mult: 1,
+    { id: 'trator2', emoji: '🚜', nome: 'Trator Turbo', max: 1, custoBase: 420, mult: 1,
       desc: 'Mais rápido, mas controlável', requer: function() { return G.nivelTrator < 2; },
       aplicar: function() { G.nivelTrator = 2; G.velTrator = velocidadeTratorNivel(2); } },
-    { id: 'ouro', emoji: '✨', nome: 'Colheita Ouro', max: 1, custoBase: 350, mult: 1,
-      desc: '+35% valor colheitas', requer: function() { return G.ouroNv < 1; },
+    { id: 'ouro', emoji: '✨', nome: 'Colheita Ouro', max: 1, custoBase: 520, mult: 1,
+      desc: '+30% valor colheitas', requer: function() { return G.ouroNv < 1; },
       aplicar: function() { G.ouroNv = 1; } },
-    { id: 'arado', emoji: '⛏️', nome: 'Arado', max: 1, custoBase: 120, mult: 1,
+    { id: 'arado', emoji: '⛏️', nome: 'Arado', max: 1, custoBase: 160, mult: 1,
       desc: 'Acopla com [C] e ara ao segurar espaço', requer: function() { return !G.arado; },
       aplicar: function() { G.arado = true; G.aradoAcoplado = true; } },
-    { id: 'terreno', emoji: '🗺', nome: 'Ampliar terreno', max: 8, custoBase: 650, mult: 1.55,
+    { id: 'terreno', emoji: '🗺', nome: 'Ampliar terreno', max: 8, custoBase: 560, mult: 1.42,
       desc: 'Desbloqueia 6 parcelas próximas', aplicar: function() {
           var n = desbloquearTerreno(6);
           G.ampliacoesTerreno = (G.ampliacoesTerreno || 0) + 1;
@@ -36,43 +36,71 @@ var LOJA_CATALOGO = [
               for (var i = 0; i < n; i++) progContrato('expandir');
           }
       } },
-    { id: 'aspersor', emoji: '💦', nome: 'Aspersor', max: 6, custoBase: 1400, mult: 1.85,
+    { id: 'aspersor', emoji: '💦', nome: 'Aspersor', max: 6, custoBase: 1150, mult: 1.62,
       desc: 'Rega 3×3; move com [M]', aplicar: function() { G.aspersores++; normalizarAspersores(); } },
-    { id: 'silo', emoji: '🏗️', nome: 'Silo', max: 5, custoBase: 2800, mult: 2.1,
+    { id: 'silo', emoji: '🏗️', nome: 'Silo', max: 5, custoBase: 2400, mult: 1.75,
       desc: '+200€ rendimento/dia', aplicar: function() { G.silos++; } },
-    { id: 'galinheiro', emoji: '🐔', nome: 'Galinheiro', max: 4, custoBase: 3200, mult: 2.0,
+    { id: 'galinheiro', emoji: '🐔', nome: 'Galinheiro', max: 4, custoBase: 2600, mult: 1.7,
       desc: '+180€/dia (ração 90€/dia)', aplicar: function() { G.galinheiro++; } },
-    { id: 'empregado', emoji: '👨‍🌾', nome: 'Empregado', max: 4, custoBase: 5000, mult: 2.3,
+    { id: 'empregado', emoji: '👨‍🌾', nome: 'Empregado', max: 4, custoBase: 4200, mult: 1.9,
       desc: 'Colhe 1 planta/ciclo', aplicar: function() { G.empregados++; } },
-    { id: 'estufa', emoji: '🏠', nome: 'Estufa', max: 1, custoBase: 12000, mult: 1,
-      desc: 'Desbloqueia lavanda 💜', requer: function() { return !G.estufa; },
+    { id: 'estufa', emoji: '🏠', nome: 'Estufa', max: 1, custoBase: 9500, mult: 1,
+      desc: 'Desbloqueia lavanda e cogumelo', requer: function() { return !G.estufa; },
       aplicar: function() { G.estufa = true; } },
-    { id: 'ouro2', emoji: '👑', nome: 'Colheita Ouro II', max: 1, custoBase: 10000, mult: 1,
+    { id: 'ouro2', emoji: '👑', nome: 'Colheita Ouro II', max: 1, custoBase: 8200, mult: 1,
       desc: '+25% extra nas colheitas', requer: function() { return G.ouroNv >= 1 && G.ouroNv < 2; },
       aplicar: function() { G.ouroNv = 2; } },
-    { id: 'irradiador', emoji: '⚡', nome: 'Irradiador', max: 3, custoBase: 8500, mult: 2.2,
+    { id: 'irradiador', emoji: '⚡', nome: 'Irradiador', max: 3, custoBase: 7000, mult: 1.85,
       desc: 'Ciclos 12% mais rápidos', aplicar: function() { G.irradiadores++; } },
-    { id: 'trator3', emoji: '🚀', nome: 'Trator Hiper', max: 1, custoBase: 18000, mult: 1,
+    { id: 'trator3', emoji: '🚀', nome: 'Trator Hiper', max: 1, custoBase: 13500, mult: 1,
       desc: 'Ainda mais rápido sem fugir das mãos', requer: function() { return G.nivelTrator >= 2 && G.nivelTrator < 3; },
       aplicar: function() { G.nivelTrator = 3; G.velTrator = velocidadeTratorNivel(3); } },
-    { id: 'celeiro', emoji: '🌾', nome: 'Celeiro', max: 4, custoBase: 7500, mult: 2.4,
+    { id: 'celeiro', emoji: '🌾', nome: 'Celeiro', max: 4, custoBase: 6200, mult: 1.85,
       desc: '+500€ rendimento/dia', aplicar: function() { G.celeiroNv++; } },
-    { id: 'exportador', emoji: '🚢', nome: 'Exportador', max: 1, custoBase: 25000, mult: 1,
+    { id: 'exportador', emoji: '🚢', nome: 'Exportador', max: 1, custoBase: 19000, mult: 1,
       desc: '+20% em todas as vendas', requer: function() { return !G.exportador; },
       aplicar: function() { G.exportador = true; } },
-    { id: 'elite', emoji: '⭐', nome: 'Sementes Elite', max: 1, custoBase: 4500, mult: 1,
+    { id: 'elite', emoji: '⭐', nome: 'Sementes Elite', max: 1, custoBase: 3600, mult: 1,
       desc: '+30% ganho cultura atual', requer: function() { return !(G.eliteSem && G.eliteSem[G.sementeAtiva]); },
       aplicar: function() {
           if (!G.eliteSem) G.eliteSem = {};
           G.eliteSem[G.sementeAtiva] = true;
       } },
-    { id: 'pomar', emoji: '🍎', nome: 'Pomar', max: 1, custoBase: 9000, mult: 1,
+    { id: 'pomar', emoji: '🍎', nome: 'Pomar', max: 1, custoBase: 7200, mult: 1,
       desc: 'Desbloqueia o pomar (árvores e culturas grandes)', requer: function() { return !G.pomar && terrenoTodoDesbloqueado(); },
       aplicar: function() { G.pomar = true; } }
     ,
-    { id: 'animais', emoji: '🐄', nome: 'Animais', max: 1, custoBase: 14000, mult: 1,
+    { id: 'animais', emoji: '🐄', nome: 'Animais', max: 1, custoBase: 10500, mult: 1,
       desc: 'Desbloqueia a área de animais (galinhas e vacas)', requer: function() { return !G.animais && terrenoTodoDesbloqueado(); },
       aplicar: function() { G.animais = true; } }
+    ,
+    { id: 'semente_cenoura', emoji: '🥕', nome: 'Sementes de Cenoura', max: 1, custoBase: 220, mult: 1,
+      desc: 'Desbloqueia cenoura no campo', requer: function() { return !sementeDesbloqueada('cenoura'); },
+      aplicar: function() { comprarSemente('cenoura'); } },
+    { id: 'semente_batata', emoji: '🥔', nome: 'Sementes de Batata', max: 1, custoBase: 480, mult: 1,
+      desc: 'Desbloqueia batata no campo', requer: function() { return !sementeDesbloqueada('batata'); },
+      aplicar: function() { comprarSemente('batata'); } },
+    { id: 'semente_tomate', emoji: '🍅', nome: 'Sementes de Tomate', max: 1, custoBase: 950, mult: 1,
+      desc: 'Desbloqueia tomate no campo', requer: function() { return !sementeDesbloqueada('tomate'); },
+      aplicar: function() { comprarSemente('tomate'); } },
+    { id: 'semente_pimento', emoji: '🌶️', nome: 'Sementes de Pimento', max: 1, custoBase: 1450, mult: 1,
+      desc: 'Desbloqueia pimento no campo', requer: function() { return !sementeDesbloqueada('pimento'); },
+      aplicar: function() { comprarSemente('pimento'); } },
+    { id: 'semente_abobora', emoji: '🎃', nome: 'Sementes de Abóbora', max: 1, custoBase: 2600, mult: 1,
+      desc: 'Desbloqueia abóbora no campo', requer: function() { return !sementeDesbloqueada('abóbora'); },
+      aplicar: function() { comprarSemente('abóbora'); } },
+    { id: 'semente_melancia', emoji: '🍉', nome: 'Sementes de Melancia', max: 1, custoBase: 3600, mult: 1,
+      desc: 'Desbloqueia melancia no campo', requer: function() { return !sementeDesbloqueada('melancia'); },
+      aplicar: function() { comprarSemente('melancia'); } },
+    { id: 'semente_cogumelo', emoji: '🍄', nome: 'Esporos de Cogumelo', max: 1, custoBase: 5200, mult: 1,
+      desc: 'Desbloqueia cogumelo na estufa', requer: function() { return G.estufa && !sementeDesbloqueada('cogumelo'); },
+      aplicar: function() { comprarSemente('cogumelo'); } },
+    { id: 'semente_ameixa', emoji: '🟣', nome: 'Muda de Ameixa', max: 1, custoBase: 4600, mult: 1,
+      desc: 'Desbloqueia ameixeira no pomar', requer: function() { return G.pomar && !sementeDesbloqueada('ameixa'); },
+      aplicar: function() { comprarSemente('ameixa'); } },
+    { id: 'semente_pessego', emoji: '🍑', nome: 'Muda de Pêssego', max: 1, custoBase: 5400, mult: 1,
+      desc: 'Desbloqueia pessegueiro no pomar', requer: function() { return G.pomar && !sementeDesbloqueada('pessego'); },
+      aplicar: function() { comprarSemente('pessego'); } }
 ];
 
 function velocidadeTratorNivel(nivel) {
@@ -82,14 +110,45 @@ function velocidadeTratorNivel(nivel) {
 }
 
 function ordemSementes() {
-    var o = ORDEM_SEMENTES_BASE.slice();
-    if (G.estufa) o.push('lavanda');
-    if (G.pomar && ORDEM_SEMENTES_POMAR) o = o.concat(ORDEM_SEMENTES_POMAR);
-    return o;
+    var o = (ORDEM_SEMENTES_BASE || []).filter(function(tipo) {
+        return sementeDesbloqueada(tipo) && CULTURAS[tipo] && !CULTURAS[tipo].requerPomar && !CULTURAS[tipo].requerEstufa;
+    });
+    if (G.estufa && ORDEM_SEMENTES_ESTUFA) {
+        o = o.concat(ORDEM_SEMENTES_ESTUFA.filter(function(tipo) {
+            return sementeDesbloqueada(tipo) && CULTURAS[tipo] && CULTURAS[tipo].requerEstufa && !CULTURAS[tipo].requerPomar;
+        }));
+    }
+    return o.length ? o : ['girassol'];
 }
 
 function ordemSementesPomar() {
-    return (ORDEM_SEMENTES_POMAR || []).slice();
+    var o = (ORDEM_SEMENTES_POMAR || []).filter(function(tipo) {
+        return sementeDesbloqueada(tipo) && CULTURAS[tipo] && CULTURAS[tipo].requerPomar;
+    });
+    return o.length ? o : ['cereja'];
+}
+
+function sementesIniciais() {
+    return {
+        girassol: true, milho: true, morango: true, lavanda: true,
+        cereja: true, maca: true, laranja: true, pera: true
+    };
+}
+
+function normalizarSementesCompradas() {
+    if (!G.sementesCompradas) G.sementesCompradas = {};
+    var iniciais = sementesIniciais();
+    Object.keys(iniciais).forEach(function(k) { G.sementesCompradas[k] = true; });
+}
+
+function sementeDesbloqueada(tipo) {
+    if (!G.sementesCompradas) normalizarSementesCompradas();
+    return !!G.sementesCompradas[tipo];
+}
+
+function comprarSemente(tipo) {
+    normalizarSementesCompradas();
+    G.sementesCompradas[tipo] = true;
 }
 
 function custoExpansao() {
@@ -342,7 +401,7 @@ function novoEventoDia() {
 
 function aplicarBonusColheita() {
     var b = 1;
-    if (G.ouroNv >= 1) b *= 1.35;
+    if (G.ouroNv >= 1) b *= 1.30;
     if (G.ouroNv >= 2) b *= 1.25;
     if (G.exportador) b *= 1.2;
     G.bonusColheita = b;
@@ -375,6 +434,20 @@ function nivelLoja(id) {
     if (id === 'elite') return G.eliteSem && G.eliteSem[G.sementeAtiva] ? 1 : 0;
     if (id === 'pomar') return G.pomar ? 1 : 0;
     if (id === 'animais') return G.animais ? 1 : 0;
+    if (id.indexOf('semente_') === 0) {
+        var mapa = {
+            semente_cenoura: 'cenoura',
+            semente_batata: 'batata',
+            semente_tomate: 'tomate',
+            semente_pimento: 'pimento',
+            semente_abobora: 'abóbora',
+            semente_melancia: 'melancia',
+            semente_cogumelo: 'cogumelo',
+            semente_ameixa: 'ameixa',
+            semente_pessego: 'pessego'
+        };
+        return mapa[id] && sementeDesbloqueada(mapa[id]) ? 1 : 0;
+    }
     return 0;
 }
 
@@ -500,7 +573,8 @@ function guardarJogo() {
             galinheiro: G.galinheiro, irradiadores: G.irradiadores, exportador: G.exportador,
             contrato: G.contrato, conquistas: G.conquistas, _contratosFeitos: G._contratosFeitos,
             arado: G.arado, aradoAcoplado: G.aradoAcoplado, ampliacoesTerreno: G.ampliacoesTerreno,
-            pomar: G.pomar, pomarPlantas: G.pomarPlantas, pomarTipo: G.pomarTipo, pomarRega: G.pomarRega
+            pomar: G.pomar, pomarPlantas: G.pomarPlantas, pomarTipo: G.pomarTipo, pomarRega: G.pomarRega,
+            animais: G.animais, animaisData: G.animaisData, sementesCompradas: G.sementesCompradas
             , sementeCampoAtiva: G.sementeCampoAtiva, sementePomarAtiva: G.sementePomarAtiva
         }));
     } catch (e) {}
@@ -538,8 +612,14 @@ function prepararEstadoJogo() {
     if (!G.pomarPlantas) G.pomarPlantas = null;
     if (!G.pomarTipo) G.pomarTipo = null;
     if (!G.pomarRega) G.pomarRega = null;
+    G.animais = !!G.animais;
+    if (!G.animaisData) G.animaisData = null;
+    normalizarSementesCompradas();
     if (!G.sementeCampoAtiva) G.sementeCampoAtiva = 'girassol';
     if (!G.sementePomarAtiva) G.sementePomarAtiva = 'cereja';
+    if (!sementeDesbloqueada(G.sementeAtiva)) G.sementeAtiva = 'girassol';
+    if (!sementeDesbloqueada(G.sementeCampoAtiva)) G.sementeCampoAtiva = 'girassol';
+    if (!sementeDesbloqueada(G.sementePomarAtiva)) G.sementePomarAtiva = 'cereja';
     G.velTrator = velocidadeTratorNivel(G.nivelTrator || 1);
     G.nivelQuinta = G.nivelQuinta || 1;
     G.xpQuinta = G.xpQuinta || 0;

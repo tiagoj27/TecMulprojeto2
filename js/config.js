@@ -41,26 +41,29 @@ var COR = {
 
 var CULTURAS = {
     // --- Originais ---
-    girassol: { emoji: '🌻', nome: 'Girassol', ganho: 65,  custoPlantio: 18,  extraCiclo: 0, fruto: 0xf97316 },
-    milho:    { emoji: '🌽', nome: 'Milho',    ganho: 110, custoPlantio: 32,  extraCiclo: 0, fruto: 0xfde047 },
-    morango:  { emoji: '🍓', nome: 'Morango',  ganho: 45,  custoPlantio: 12,  extraCiclo: 1, fruto: 0xef4444 },
-    lavanda:  { emoji: '💜', nome: 'Lavanda',  ganho: 320, custoPlantio: 95,  extraCiclo: 0, fruto: 0xa78bfa, requerEstufa: true },
+    cenoura:  { emoji: '🥕', nome: 'Cenoura',  ganho: 30,  custoPlantio: 9,   extraCiclo: 1, fruto: 0xf97316 },
+    morango:  { emoji: '🍓', nome: 'Morango',  ganho: 48,  custoPlantio: 14,  extraCiclo: 1, fruto: 0xef4444 },
+    girassol: { emoji: '🌻', nome: 'Girassol', ganho: 68,  custoPlantio: 20,  extraCiclo: 0, fruto: 0xf97316 },
+    batata:   { emoji: '🥔', nome: 'Batata',   ganho: 82,  custoPlantio: 24,  extraCiclo: 0, fruto: 0xd97706 },
+    milho:    { emoji: '🌽', nome: 'Milho',    ganho: 112, custoPlantio: 34,  extraCiclo: 0, fruto: 0xfde047 },
+    tomate:   { emoji: '🍅', nome: 'Tomate',   ganho: 150, custoPlantio: 46,  extraCiclo: 2, fruto: 0xdc2626 },
+    pimento:  { emoji: '🌶️', nome: 'Pimento',  ganho: 185, custoPlantio: 58,  extraCiclo: 1, fruto: 0x22c55e },
+    abóbora:  { emoji: '🎃', nome: 'Abóbora',  ganho: 360, custoPlantio: 120, extraCiclo: 0, fruto: 0xea580c },
+    melancia: { emoji: '🍉', nome: 'Melancia', ganho: 420, custoPlantio: 150, extraCiclo: 1, fruto: 0x16a34a },
 
-    // --- Novas Culturas (Básicas e Intermédias) ---
-    cenoura:  { emoji: '🥕', nome: 'Cenoura',  ganho: 35,  custoPlantio: 10,  extraCiclo: 0, fruto: 0xf97316 }, // Barata e rápida
-    batata:   { emoji: '🥔', nome: 'Batata',   ganho: 80,  custoPlantio: 22,  extraCiclo: 0, fruto: 0xd97706 },
-    tomate:   { emoji: '🍅', nome: 'Tomate',   ganho: 140, custoPlantio: 40,  extraCiclo: 2, fruto: 0xdc2626 }, // Dá várias colheitas (extraCiclo)
+    // --- Estufa ---
+    lavanda:  { emoji: '💜', nome: 'Lavanda',  ganho: 330, custoPlantio: 105, extraCiclo: 0, fruto: 0xa78bfa, requerEstufa: true },
+    cogumelo: { emoji: '🍄', nome: 'Cogumelo', ganho: 650, custoPlantio: 260, extraCiclo: 0, fruto: 0x8b5cf6, requerEstufa: true },
 
-    // --- Novas Culturas (Avançadas e Árvores) ---
-    abóbora:  { emoji: '🎃', nome: 'Abóbora',  ganho: 450, custoPlantio: 130, extraCiclo: 0, fruto: 0xea580c }, // Demora mas lucra muito
-    cereja:   { emoji: '🍒', nome: 'Cereja',   ganho: 600, custoPlantio: 200, extraCiclo: 4, fruto: 0x991b1b, requerPomar: true }, // Requisito especial
-    maca:     { emoji: '🍎', nome: 'Maçã',     ganho: 520, custoPlantio: 170, extraCiclo: 3, fruto: 0xef4444, requerPomar: true },
-    laranja:  { emoji: '🍊', nome: 'Laranja',  ganho: 560, custoPlantio: 185, extraCiclo: 3, fruto: 0xf97316, requerPomar: true },
-    pera:     { emoji: '🍐', nome: 'Pêra',     ganho: 480, custoPlantio: 160, extraCiclo: 3, fruto: 0x84cc16, requerPomar: true },
-
-    // --- Nova Cultura Rara / Mística ---
-    cogumelo: { emoji: '🍄', nome: 'Cogumelo Cósmico', ganho: 1200, custoPlantio: 400, extraCiclo: 0, fruto: 0x8b5cf6, requerEstufa: true }
+    // --- Pomar ---
+    cereja:   { emoji: '🍒', nome: 'Cereja',   ganho: 570, custoPlantio: 190, extraCiclo: 4, fruto: 0x991b1b, requerPomar: true },
+    maca:     { emoji: '🍎', nome: 'Maçã',     ganho: 520, custoPlantio: 175, extraCiclo: 3, fruto: 0xef4444, requerPomar: true },
+    laranja:  { emoji: '🍊', nome: 'Laranja',  ganho: 560, custoPlantio: 195, extraCiclo: 3, fruto: 0xf97316, requerPomar: true },
+    pera:     { emoji: '🍐', nome: 'Pêra',     ganho: 490, custoPlantio: 165, extraCiclo: 3, fruto: 0x84cc16, requerPomar: true },
+    ameixa:   { emoji: '🟣', nome: 'Ameixa',   ganho: 610, custoPlantio: 210, extraCiclo: 3, fruto: 0x7c3aed, requerPomar: true },
+    pessego:  { emoji: '🍑', nome: 'Pêssego',  ganho: 660, custoPlantio: 230, extraCiclo: 4, fruto: 0xfb923c, requerPomar: true }
 };
 
-var ORDEM_SEMENTES_BASE = ['girassol', 'milho', 'morango'];
-var ORDEM_SEMENTES_POMAR = ['cereja', 'maca', 'laranja', 'pera'];
+var ORDEM_SEMENTES_BASE = ['cenoura', 'morango', 'girassol', 'batata', 'milho', 'tomate', 'pimento', 'abóbora', 'melancia'];
+var ORDEM_SEMENTES_ESTUFA = ['lavanda', 'cogumelo'];
+var ORDEM_SEMENTES_POMAR = ['cereja', 'maca', 'laranja', 'pera', 'ameixa', 'pessego'];

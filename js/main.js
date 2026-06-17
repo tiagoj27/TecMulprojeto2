@@ -1,16 +1,11 @@
 window.addEventListener('load', function() {
-<<<<<<< Updated upstream
     if (window.AudioJogo) AudioJogo.bindUnlock();
     if (window.IdiomasJogo) IdiomasJogo.atualizarDom();
-=======
     atualizarDimensoesJogo();
->>>>>>> Stashed changes
     MaquinaEstados.mudar(Estado.CAMPO);
-    new Phaser.Game({
+
     var game = new Phaser.Game({
         type: Phaser.CANVAS,
-        width: 1000,
-        height: 750,
         width: JOGO_LARGURA,
         height: JOGO_ALTURA,
         render: {
@@ -20,6 +15,7 @@ window.addEventListener('load', function() {
         parent: 'game-wrapper',
         scene: [TelaInicio, CenaQuinta, CenaPomar, CenaAnimais, CenaLoja, MenuPausa]
     });
+    window.game = game;
 
     function reiniciarCenaAtual() {
         atualizarDimensoesJogo();

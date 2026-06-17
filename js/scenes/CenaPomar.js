@@ -136,7 +136,6 @@ class CenaPomar extends Phaser.Scene {
 
     iso(gx, gy) {
         var tam = 54;
-        var ox = 520, oy = 185;
         var ox = JOGO_CENTRO_X, oy = JOGO_CENTRO_Y - 190;
         return {
             x: ox + (gx - gy) * tam,
@@ -188,7 +187,148 @@ class CenaPomar extends Phaser.Scene {
                 }
             }
             guardarJogo();
+        } else {
+            if (!G.pomarRega) G.pomarRega = [];
+            var mudou = false;
+            for (var xx = 0; xx < cols; xx++) {
+                if (!G.pomarPlantas[xx]) { G.pomarPlantas[xx] = []; mudou = true; }
+                if (!G.pomarTipo[xx]) { G.pomarTipo[xx] = []; mudou = true; }
+                if (!G.pomarRega[xx]) { G.pomarRega[xx] = []; mudou = true; }
+                for (var yy = 0; yy < rows; yy++) {
+                    if (G.pomarPlantas[xx][yy] === undefined) { G.pomarPlantas[xx][yy] = 0; mudou = true; }
+                    if (G.pomarTipo[xx][yy] === undefined) { G.pomarTipo[xx][yy] = ''; mudou = true; }
+                    if (G.pomarRega[xx][yy] === undefined) { G.pomarRega[xx][yy] = false; mudou = true; }
+                }
+            }
+            if (mudou) guardarJogo();
         }
+    }
+
+    toastPomar(msg, tipo, dur, chave) {
+        var agora = this.time ? this.time.now : Date.now();
+        var id = chave || msg;
+        if (this._toastPomarId === id && agora - (this._toastPomarTempo || 0) < 1200) return;
+        this._toastPomarId = id;
+        this._toastPomarTempo = agora;
+        toast(msg, tipo, dur || 1500);
+    }
+
+    desenharRelvaPomar(d, tam, x, y) {
+        var pontos = [
+            [-26, -3], [-15, 8], [-4, -8], [12, 5], [24, -4],
+            [-21, 16], [5, 16], [20, 12]
+        ];
+        d.lineStyle(2, 0x86efac, 0.42);
+        for (var i = 0; i < pontos.length; i++) {
+            if ((i + x * 2 + y) % 3 === 0) continue;
+            var px = pontos[i][0], py = pontos[i][1];
+            d.beginPath(); d.moveTo(px, py + 5); d.lineTo(px + 2, py - 1); d.strokePath();
+            d.beginPath(); d.moveTo(px + 4, py + 5); d.lineTo(px + 1, py); d.strokePath();
+        }
+    }
+
+    desenharFrutoPomar(d, tipo, x, y, r) {
+        if (tipo === 'pera') {
+            d.fillStyle(0x84cc16, 1);
+            d.fillEllipse(x, y + 1, r * 1.7, r * 2.2);
+            d.fillCircle(x, y - r * 0.55, r * 0.75);
+            d.fillStyle(0xfef08a, 0.45);
+            d.fillCircle(x - r * 0.35, y - r * 0.2, Math.max(1.2, r * 0.28));
+            return;
+        }
+        if (tipo === 'cereja') {
+            d.lineStyle(1.5, 0x365314, 0.9);
+            d.beginPath(); d.moveTo(x - r * 0.5, y - r); d.lineTo(x, y - r * 2); d.lineTo(x + r * 0.55, y - r); d.strokePath();
+            d.fillStyle(0xb91c1c, 1);
+            d.fillCircle(x - r * 0.45, y, r * 0.68);
+            d.fillCircle(x + r * 0.55, y + 1, r * 0.68);
+            d.fillStyle(0xffffff, 0.35);
+            d.fillCircle(x - r * 0.7, y - r * 0.18, Math.max(1, r * 0.18));
+            return;
+        }
+        if (tipo === 'ameixa') {
+            d.fillStyle(0x7c3aed, 1);
+            d.fillEllipse(x, y, r * 1.7, r * 1.35);
+            d.fillStyle(0xf5d0fe, 0.35);
+            d.fillCircle(x - r * 0.28, y - r * 0.22, Math.max(1, r * 0.2));
+            return;
+        }
+        if (tipo === 'pessego') {
+            d.fillStyle(0xfb923c, 1);
+            d.fillCircle(x, y, r * 1.05);
+            d.lineStyle(1.3, 0xc2410c, 0.45);
+            d.beginPath(); d.moveTo(x, y - r); d.lineTo(x + 1, y + r); d.strokePath();
+            d.fillStyle(0xffedd5, 0.42);
+            d.fillCircle(x - r * 0.35, y - r * 0.35, Math.max(1, r * 0.24));
+            return;
+        }
+        d.fillStyle(tipo === 'laranja' ? 0xf97316 : 0xef4444, 1);
+        d.fillCircle(x, y, r);
+        d.fillStyle(tipo === 'laranja' ? 0xffedd5 : 0xffffff, 0.32);
+        d.fillCircle(x - r * 0.35, y - r * 0.35, Math.max(1, r * 0.22));
+        d.fillStyle(0x365314, 0.9);
+        d.fillEllipse(x + r * 0.2, y - r * 0.95, r * 0.9, r * 0.42);
+    }
+
+    desenharArvorePomar(d, estado, tipo) {
+        var troncoH = 12 + estado * 5;
+        var copaY = -13 - troncoH;
+        var copaR = 9 + estado * 4;
+        var madura = estado >= 5;
+
+        d.fillStyle(0x052e16, 0.42);
+        d.fillEllipse(0, 17, 34 + estado * 7, 15 + estado * 2);
+
+        var troncoBase = tipo === 'cereja' ? 0xc08457 : 0x7c2d12;
+        var troncoLuz = tipo === 'cereja' ? 0xe0a66f : 0x9a3412;
+        d.lineStyle(5, troncoBase, 1);
+        d.beginPath(); d.moveTo(0, 8); d.lineTo(0, -troncoH); d.strokePath();
+        d.lineStyle(2, troncoLuz, 0.95);
+        d.beginPath(); d.moveTo(0, -troncoH + 5); d.lineTo(-10, -troncoH - 7); d.strokePath();
+        d.beginPath(); d.moveTo(1, -troncoH + 2); d.lineTo(10, -troncoH - 8); d.strokePath();
+
+        var tons = tipo === 'pera'
+            ? [0x65a30d, 0x4d7c0f, 0x84cc16]
+            : (tipo === 'laranja'
+                ? [0x15803d, 0x166534, 0x22c55e]
+                : (tipo === 'cereja'
+                    ? [0xf9a8d4, 0xf472b6, 0xfbcfe8]
+                    : (tipo === 'ameixa'
+                        ? [0x6d8d3d, 0x3f6212, 0x8b5cf6]
+                        : (tipo === 'pessego' ? [0x86a64a, 0x4d7c0f, 0xfbbf24] : [0x166534, 0x14532d, 0x16a34a]))));
+        d.fillStyle(tons[1], 1);
+        d.fillEllipse(0, copaY + 5, copaR * 2.2, copaR * 1.65);
+        d.fillStyle(tons[0], 1);
+        d.fillCircle(-copaR * 0.55, copaY + 1, copaR * 0.9);
+        d.fillCircle(copaR * 0.55, copaY + 2, copaR * 0.88);
+        d.fillStyle(tons[2], 0.95);
+        d.fillCircle(-copaR * 0.12, copaY - copaR * 0.42, copaR * 0.95);
+        d.fillCircle(copaR * 0.18, copaY + copaR * 0.28, copaR * 0.78);
+        d.fillStyle(0xffffff, tipo === 'cereja' ? 0.24 : 0.12);
+        d.fillCircle(-copaR * 0.4, copaY - copaR * 0.38, Math.max(3, copaR * 0.22));
+
+        if (tipo === 'cereja') {
+            d.fillStyle(0xfce7f3, 0.55);
+            d.fillCircle(-22, 9, 2.2);
+            d.fillCircle(-12, 16, 1.8);
+            d.fillCircle(18, 12, 2);
+            d.fillCircle(25, 2, 1.6);
+        }
+
+        if (!madura) {
+            d.lineStyle(2, tipo === 'cereja' ? 0xfce7f3 : 0xbbf7d0, 0.46);
+            d.strokeEllipse(0, copaY + 3, copaR * 2.35, copaR * 1.55);
+            return;
+        }
+
+        var frutos = [
+            [-10, -2], [8, 0], [0, 9], [-17, 7], [17, 8], [2, -9]
+        ];
+        for (var i = 0; i < frutos.length; i++) {
+            this.desenharFrutoPomar(d, tipo, frutos[i][0], copaY + frutos[i][1], tipo === 'cereja' ? 3.8 : 4.2);
+        }
+        d.lineStyle(2, tipo === 'cereja' ? 0xfce7f3 : 0xfef08a, 0.75);
+        d.strokeEllipse(0, copaY + 4, copaR * 2.45, copaR * 1.75);
     }
 
     drawTile(x, y) {
@@ -202,8 +342,25 @@ class CenaPomar extends Phaser.Scene {
         g.clear();
         d.clear();
 
-        g.lineStyle(2, 0x0b1220, 0.9);
-        g.fillStyle(0x14532d, 1);
+        g.fillStyle(0x6b3f1d, 1);
+        g.beginPath();
+        g.moveTo(-tam, 0);
+        g.lineTo(0, tam * 0.5);
+        g.lineTo(0, tam * 0.74);
+        g.lineTo(-tam, tam * 0.24);
+        g.closePath();
+        g.fillPath();
+        g.fillStyle(0x4b2c16, 1);
+        g.beginPath();
+        g.moveTo(tam, 0);
+        g.lineTo(0, tam * 0.5);
+        g.lineTo(0, tam * 0.74);
+        g.lineTo(tam, tam * 0.24);
+        g.closePath();
+        g.fillPath();
+
+        g.lineStyle(2, 0x25451f, 0.95);
+        g.fillStyle(0x58a541, 1);
         g.beginPath();
         g.moveTo(0, -tam * 0.5);
         g.lineTo(tam, 0);
@@ -212,41 +369,13 @@ class CenaPomar extends Phaser.Scene {
         g.closePath();
         g.fillPath();
         g.strokePath();
+        g.lineStyle(1, 0x9ae66e, 0.28);
+        g.beginPath(); g.moveTo(-tam * 0.62, -1); g.lineTo(0, tam * 0.31); g.lineTo(tam * 0.62, -1); g.strokePath();
 
         var e = G.pomarPlantas[x][y];
         var tipo = G.pomarTipo[x][y];
-        if (e > 0) {
-            var c = CULTURAS[tipo] || CULTURAS['cereja'];
-            var cor = c.fruto || 0xfacc15;
-
-            var troncoH = 10 + e * 5;
-            var copaY = -10 - troncoH;
-            var copaR = 10 + e * 4;
-
-            d.fillStyle(0x052e16, 0.7);
-            d.fillEllipse(0, 14, 34 + e * 5, 14 + e * 2);
-
-            d.fillStyle(0x7c2d12, 1);
-            d.fillRoundedRect(-4, -troncoH, 8, troncoH + 8, 3);
-            d.fillStyle(0x92400e, 0.75);
-            d.fillRect(-2, -troncoH + 2, 4, troncoH + 2);
-
-            d.fillStyle(0x166534, 0.98);
-            d.fillCircle(0, copaY, copaR);
-            d.fillCircle(-copaR * 0.55, copaY + 2, Math.max(6, copaR * 0.75));
-            d.fillCircle(copaR * 0.55, copaY + 2, Math.max(6, copaR * 0.75));
-            d.fillStyle(0xffffff, 0.12);
-            d.fillCircle(-3, copaY - 4, Math.max(3, copaR * 0.28));
-
-            if (e >= 5) {
-                d.fillStyle(cor, 0.95);
-                d.fillCircle(-6, copaY + 4, 4);
-                d.fillCircle(6, copaY + 6, 4);
-                d.fillCircle(0, copaY + 12, 4);
-                d.lineStyle(2, 0xfacc15, 0.85);
-                d.strokeCircle(0, copaY, copaR + 2);
-            }
-        }
+        this.desenharRelvaPomar(d, tam, x, y);
+        if (e > 0) this.desenharArvorePomar(d, e, tipo || 'cereja');
 
         if (this.sel && this.sel.x === x && this.sel.y === y) {
             d.lineStyle(3, 0x22d3ee, 0.95);
@@ -271,8 +400,8 @@ class CenaPomar extends Phaser.Scene {
         MaquinaEstados.mudar(Estado.POMAR);
         this.cameras.main.setScroll(0, 0);
 
-        this.pCols = 6;
-        this.pRows = 6;
+        this.pCols = 7;
+        this.pRows = 7;
         this.gTiles = [];
         this.gDetail = [];
         this.sel = { x: 2, y: 2 };
@@ -297,21 +426,14 @@ class CenaPomar extends Phaser.Scene {
             G.sementePomarAtiva = G.sementeAtiva;
         }
 
-<<<<<<< Updated upstream
-        this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
-        this.add.rectangle(500, 375, 1000, 750, 0x0b1220, 0.18);
-        this.add.rectangle(500, 375, 920, 650, 0x000000, 0.12);
-        this.add.text(780, 54, '🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('pomar').toUpperCase() : 'POMAR'), {
-=======
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a);
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x0b1220, 0.18);
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA - 80, JOGO_ALTURA - 80, 0x000000, 0.12);
-        this.add.text(JOGO_LARGURA - 220, 54, '🍎 POMAR', {
->>>>>>> Stashed changes
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x0f1f14);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y + 220, JOGO_LARGURA, 340, 0x172b16, 0.72);
+        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y - 180, JOGO_LARGURA, 260, 0x263b26, 0.36);
+        this.add.text(JOGO_LARGURA - 220, 54, (window.IdiomasJogo ? IdiomasJogo.t('pomar').toUpperCase() : 'POMAR'), {
             fontFamily: "'Exo 2',sans-serif",
             fontSize: '22px',
             fontStyle: '900',
-            color: '#e2e8f0'
+            color: '#dcfce7'
         }).setOrigin(0.5).setDepth(99999);
 
         this.initPomarState();
@@ -353,8 +475,6 @@ class CenaPomar extends Phaser.Scene {
 
         this._cicloInicio = this.time.now;
         this._proximoCiclo = this.time.now + CICLO_MS * this.pomarCicloMult();
-
-        toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.t('pomar') : 'Pomar') + '!', 'ok', 3200);
     }
 
     update(t, dt) {
@@ -362,7 +482,6 @@ class CenaPomar extends Phaser.Scene {
 
         var moved = false;
         var saida = this.posSaida();
-        if (Phaser.Input.Keyboard.JustDown(this.keys.left)) {
         var moveLeft = Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.kA);
         var moveRight = Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.kD);
         var moveUp = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.kW);
@@ -372,17 +491,14 @@ class CenaPomar extends Phaser.Scene {
             if (this.sel.x > 0) { this.sel.x--; this.trDir = { x: -1, y: 0 }; moved = true; }
             else if (this.sel.x === 0 && this.sel.y === saida.y) { this.sel.x = saida.x; this.trDir = { x: -1, y: 0 }; moved = true; }
         }
-        if (Phaser.Input.Keyboard.JustDown(this.keys.right)) {
         if (moveRight) {
             if (this.sel.x === saida.x && this.sel.y === saida.y) { this.sel.x = 0; this.trDir = { x: 1, y: 0 }; moved = true; }
             else if (this.sel.x < this.pCols - 1) { this.sel.x++; this.trDir = { x: 1, y: 0 }; moved = true; }
         }
-        if (Phaser.Input.Keyboard.JustDown(this.keys.up)) {
         if (moveUp) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y > 0) { this.sel.y--; this.trDir = { x: 0, y: -1 }; moved = true; }
         }
-        if (Phaser.Input.Keyboard.JustDown(this.keys.down)) {
         if (moveDown) {
             if (this.sel.x === saida.x) this.sel.x = 0;
             if (this.sel.y < this.pRows - 1) { this.sel.y++; this.trDir = { x: 0, y: 1 }; moved = true; }
@@ -437,28 +553,28 @@ class CenaPomar extends Phaser.Scene {
         }
 
         var tx = this.sel.x, ty = this.sel.y;
-        if (this.kSpace.isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.kSpace)) {
             if (tx < 0) return;
             if (G.pomarPlantas[tx][ty] === 0) {
                 var culKey = G.sementeAtiva;
                 var c = CULTURAS[culKey];
                 if (!c || !c.requerPomar) {
-                    toast('🍎 ' + (window.IdiomasJogo ? IdiomasJogo.msg('pomarSoArvores', 'No pomar só dá para plantar árvores/culturas grandes') : 'No pomar só dá para plantar árvores/culturas grandes'), 'war');
+                    this.toastPomar('No pomar so da para plantar arvores/culturas grandes', 'war', 1400, 'so-arvores');
                     return;
                 }
                 if (this.temArvoreAdjacente(tx, ty)) {
-                    toast('📏 ' + (window.IdiomasJogo ? IdiomasJogo.msg('espacoArvores', 'Precisas de 1 bloco de espaço entre árvores') : 'Precisas de 1 bloco de espaço entre árvores'), 'war');
+                    this.toastPomar('Precisas de 1 bloco de espaco entre arvores', 'war', 1400, 'espaco-arvores');
                     return;
                 }
                 var cp = custoPlantio(culKey);
-                if (G.moedas < cp) { toast('❌ ' + (window.IdiomasJogo ? IdiomasJogo.msg('sementesCustam', 'Sementes custam {valor}€', { valor: cp }) : 'Sementes custam ' + cp + '€'), 'err'); return; }
+                if (G.moedas < cp) { this.toastPomar('Sementes custam ' + cp + ' EUR', 'err', 1400, 'sem-moedas'); return; }
                 G.moedas -= cp;
                 G.pomarPlantas[tx][ty] = 1;
                 G.pomarTipo[tx][ty] = culKey;
                 this.drawTile(tx, ty);
                 this.updateHUD();
                 if (window.AudioJogo) AudioJogo.sfx('plant');
-                toast(c.emoji + ' ' + c.nome + ' (-' + cp + '€)', 'ok');
+                this.toastPomar(c.nome + ' plantada (-' + cp + ' EUR)', 'ok', 1400, 'plantou');
                 guardarJogo();
             } else if (G.pomarPlantas[tx][ty] >= 5) {
                 var tipoColhido = G.pomarTipo[tx][ty] || 'cereja';
@@ -476,7 +592,7 @@ class CenaPomar extends Phaser.Scene {
                 var pp = this.iso(tx, ty);
                 coinPop(this.game.canvas, pp.x, pp.y - 40, ganho);
                 if (window.AudioJogo) AudioJogo.sfx('harvest');
-                toast('✅ ' + (window.IdiomasJogo ? IdiomasJogo.msg('colheste', 'Colheste +{valor}€', { valor: ganho }) : 'Colheste +' + ganho + '€'), 'ok');
+                this.toastPomar('Colheste +' + ganho + ' EUR', 'ok', 1400, 'colheu');
                 guardarJogo();
             }
         }

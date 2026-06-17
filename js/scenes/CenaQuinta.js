@@ -26,7 +26,6 @@ class CenaQuinta extends Phaser.Scene {
             var p = this.posPomar();
             if (x === p.x && y === p.y) return true;
         }
-        if (G.animais) {
         if (G.animais && terrenoTodoDesbloqueado()) {
             var a = this.posAnimais();
             if (x === a.x && y === a.y) return true;
@@ -83,11 +82,14 @@ class CenaQuinta extends Phaser.Scene {
     }
 
     create(data) {
-        self = this;
+        var self = this;
         MaquinaEstados.mudar(Estado.CAMPO);
         if (this.game.canvas) {
             this.game.canvas.setAttribute('tabindex', '1');
             this.game.canvas.focus();
+            this.input.on('pointerdown', () => {
+                this.game.canvas.focus();
+            });
         }
         this.keys = this.input.keyboard.createCursorKeys();
         this.kSpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -103,6 +105,22 @@ class CenaQuinta extends Phaser.Scene {
         this.kArado = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
         this.kM     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
         this.kP     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+        this._teclasDiretas = {};
+        this._onKeyDownDireto = (ev) => {
+            this._teclasDiretas[ev.code] = true;
+            if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].indexOf(ev.code) >= 0) {
+                ev.preventDefault();
+            }
+        };
+        this._onKeyUpDireto = (ev) => {
+            this._teclasDiretas[ev.code] = false;
+        };
+        window.addEventListener('keydown', this._onKeyDownDireto);
+        window.addEventListener('keyup', this._onKeyUpDireto);
+        this.events.once('shutdown', () => {
+            window.removeEventListener('keydown', this._onKeyDownDireto);
+            window.removeEventListener('keyup', this._onKeyUpDireto);
+        });
 
         if (!carregarJogo()) {
             G.eventoDia = { msg: '🌅 Bem-vindo à quinta', cicloMult: 1, ganhoMult: 1, rega: 0 };
@@ -124,7 +142,7 @@ class CenaQuinta extends Phaser.Scene {
         prepararEstadoJogo();
 
         if (CULTURAS[G.sementeAtiva] && CULTURAS[G.sementeAtiva].requerPomar) {
-            G.sementeAtiva = G.sementeCampoAtiva || 'girassol';
+            G.sementeAtiva = (G.sementeCampoAtiva && ordemSementes().indexOf(G.sementeCampoAtiva) >= 0) ? G.sementeCampoAtiva : ordemSementes()[0];
         } else {
             G.sementeCampoAtiva = G.sementeAtiva;
         }
@@ -150,18 +168,16 @@ class CenaQuinta extends Phaser.Scene {
         }
         normalizarAspersores();
 
-        this.add.rectangle(500, 375, 1000, 750, 0x060d1a);
-        this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a).setDepth(-2);
         if (this.textures.exists('bg_quinta')) {
-            this.add.image(JOGO_CENTRO_X, JOGO_CENTRO_Y, 'bg_quinta').setDepth(-1).setDisplaySize(JOGO_LARGURA, JOGO_ALTURA);
+            this.add.image(JOGO_CENTRO_X, JOGO_CENTRO_Y, 'bg_quinta').setDepth(-20).setDisplaySize(JOGO_LARGURA, JOGO_ALTURA);
         } else {
+            this.add.rectangle(JOGO_CENTRO_X, JOGO_CENTRO_Y, JOGO_LARGURA, JOGO_ALTURA, 0x060d1a).setDepth(-20);
             console.warn('bg_quinta não existe (falha de preload?)');
         }
 
         for (var x = 0; x < COLS; x++) {
             this.terreno[x] = []; this.gTiles[x] = []; this.gDetail[x] = [];
             for (var y = 0; y < ROWS; y++) {
-                var h = Math.sin(x*0.55) * Math.cos(y*0.55) * 22;
                 var h = Math.sin(x*0.55) * Math.cos(y*0.55) * QUINTA_RELEVO_BASE * JOGO_ESCALA;
                 this.terreno[x][y] = h;
                 var p = this.iso(x, y);
@@ -212,7 +228,6 @@ class CenaQuinta extends Phaser.Scene {
         }
 
         this.tileAnimais = null;
-        if (G.animais) {
         if (G.animais && terrenoTodoDesbloqueado()) {
             var animaisPos = this.posAnimais();
             this.tileAnimais = this.criarTileAcesso({
@@ -256,8 +271,6 @@ class CenaQuinta extends Phaser.Scene {
         ui.strokeRoundedRect(10, 10, 285, 138, 10);
 
         this.txtUI = this.add.text(20, 20, '', {
-            fontFamily: "'Exo 2',sans-serif", fontSize: '13px', fontStyle: 'bold',
-            color: '#e2e8f0', lineSpacing: 6
             fontFamily: "'Exo 2',sans-serif", fontSize: '14px', fontStyle: 'bold',
             color: '#f8fafc', lineSpacing: 6
         }).setDepth(99991);
@@ -275,30 +288,19 @@ class CenaQuinta extends Phaser.Scene {
             '  [Q] ' + (window.IdiomasJogo ? IdiomasJogo.t('semente') : 'Semente') + '  [C] ' + (window.IdiomasJogo ? IdiomasJogo.t('arado') : 'Arado') + '  [M] ' + (window.IdiomasJogo ? IdiomasJogo.t('moverAspersor') : 'Mover aspersor'),
             '  [U] ' + (window.IdiomasJogo ? IdiomasJogo.t('adubo') : 'Adubo') + '  [E] ' + (window.IdiomasJogo ? IdiomasJogo.t('expandir') : 'Expandir') + '  [N] ' + (window.IdiomasJogo ? IdiomasJogo.t('diaSeguinte') : 'Dia seguinte'),
         ].join('\n'), {
-            fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
-            color: '#475569', lineSpacing: 5
             fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
             color: '#94a3b8', lineSpacing: 5
         }).setDepth(99991);
 
         var mp = this.add.graphics().setDepth(99990);
-        mp.fillStyle(0x060d1a, 0.88); mp.lineStyle(1, 0xfacc15, 0.35);
-        mp.fillRoundedRect(700, 10, 290, 200, 10);
-        mp.strokeRoundedRect(700, 10, 290, 200, 10);
-        this.txtMissoes = this.add.text(715, 22, '', {
-            fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
-            color: '#94a3b8', lineSpacing: 5
-        mp.fillStyle(0x060d1a, 0.96); mp.lineStyle(1, 0xfacc15, 0.48);
         var painelDireitaX = JOGO_LARGURA - 300;
+        mp.fillStyle(0x060d1a, 0.96); mp.lineStyle(1, 0xfacc15, 0.48);
         mp.fillRoundedRect(painelDireitaX, 10, 290, 200, 10);
         mp.strokeRoundedRect(painelDireitaX, 10, 290, 200, 10);
         this.txtMissoes = this.add.text(painelDireitaX + 15, 22, '', {
             fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
             color: '#cbd5e1', lineSpacing: 5
         }).setDepth(99991);
-        this.txtContrato = this.add.text(715, 118, '', {
-            fontFamily: "'Exo 2',sans-serif", fontSize: '11px',
-            color: '#a5b4fc', lineSpacing: 5
         this.txtContrato = this.add.text(painelDireitaX + 15, 118, '', {
             fontFamily: "'Exo 2',sans-serif", fontSize: '12px', fontStyle: 'bold',
             color: '#c7d2fe', lineSpacing: 5
@@ -321,7 +323,6 @@ class CenaQuinta extends Phaser.Scene {
     }
 
     iso(gx, gy) {
-        var ox = 500, oy = 200;
         var ox = ISO_ORIGEM_X, oy = ISO_ORIGEM_Y;
         return {
             x: ox + (gx - gy) * TAM,
@@ -421,100 +422,312 @@ class CenaQuinta extends Phaser.Scene {
     }
 
     desenharMilho(d, estado, variante) {
-        var altura = estado === 2 ? 18 : (estado === 3 ? 28 : 38);
-        var caules = estado >= 4 ? 3 : (estado >= 3 ? 2 : 1);
-        var offsets = caules === 1 ? [0] : (caules === 2 ? [-7, 7] : [-10, 0, 10]);
+        var fase = Math.min(estado, 5);
+        var linhas = fase >= 4 ? [-17, -8, 1, 10, 19] : (fase >= 3 ? [-12, 0, 12] : [-8, 8]);
+        var altura = fase === 2 ? 18 : (fase === 3 ? 27 : 37);
 
-        d.fillStyle(0x34552d, 0.26);
-        d.fillEllipse(0, 9, 34, 10);
+        d.fillStyle(0x8bb84e, 0.22);
+        d.fillEllipse(0, 10, 46, 17);
 
-        for (var i = 0; i < offsets.length; i++) {
-            var ox = offsets[i] + (variante - 1.5) * 1.2;
-            var h = altura + (i % 2) * 5;
-            d.lineStyle(5, 0xb8ee55, 1);
-            d.beginPath(); d.moveTo(ox, 6); d.lineTo(ox, -h); d.strokePath();
+        for (var i = 0; i < linhas.length; i++) {
+            var ox = linhas[i] + ((i + variante) % 2 ? 1.5 : -1.5);
+            var h = altura + (i % 3) * 4;
 
-            d.fillStyle(0x6be34f, 1);
-            d.fillEllipse(ox - 7, -h * 0.45, 13, 8);
-            d.fillEllipse(ox + 7, -h * 0.62, 13, 8);
-            if (estado >= 3) {
-                d.fillStyle(0xffe900, 1);
-                d.fillEllipse(ox - 6, -h + 7, 8, 16);
+            d.lineStyle(3, 0x3bbf67, 1);
+            d.beginPath();
+            d.moveTo(ox, 7);
+            d.lineTo(ox, -h);
+            d.strokePath();
+
+            d.fillStyle(0x62d879, 1);
+            d.fillEllipse(ox - 5, -h * 0.42, 12, 6);
+            d.fillEllipse(ox + 5, -h * 0.58, 12, 6);
+            if (fase >= 4) {
+                d.fillStyle(0xf6c85f, 1);
+                d.fillEllipse(ox + (i % 2 ? -4 : 4), -h * 0.45, 6, 14);
+                d.lineStyle(1, 0xb7791f, 0.55);
+                d.strokeEllipse(ox + (i % 2 ? -4 : 4), -h * 0.45, 6, 14);
             }
-            if (estado >= 4) {
-                d.fillStyle(0xffb000, 1);
-                d.fillEllipse(ox + 5, -h * 0.55, 8, 17);
+            if (fase >= 5) {
+                d.lineStyle(1, 0xfacc15, 0.9);
+                d.beginPath();
+                d.moveTo(ox, -h);
+                d.lineTo(ox - 2, -h - 8);
+                d.strokePath();
             }
         }
     }
 
     desenharMorango(d, estado, variante) {
-        var pontos = [
-            [-11, 0], [-4, -5], [8, -3], [12, 4],
-            [-8, 7], [2, 6], [0, -12], [15, -9]
+        var fase = Math.min(estado, 5);
+        var folhas = [
+            [-13, 1], [-8, -6], [0, -9], [8, -6], [13, 1],
+            [-6, 5], [4, 5], [0, 0]
         ];
-        var qtd = estado === 2 ? 4 : (estado === 3 ? 6 : pontos.length);
+        var qtd = fase === 2 ? 4 : (fase === 3 ? 6 : folhas.length);
 
-        d.fillStyle(0x31512e, 0.28);
-        d.fillEllipse(0, 7, 36, 14);
-        d.fillStyle(0x78bd4d, 1);
+        d.fillStyle(0x617b34, 0.35);
+        d.fillEllipse(0, 7, 44, 18);
+        d.fillStyle(0x1f7a40, 0.95);
+        d.fillEllipse(0, 0, 34, 18);
+
         for (var i = 0; i < qtd; i++) {
-            var p = pontos[(i + variante) % pontos.length];
-            d.fillCircle(p[0], p[1], 6);
-            d.fillCircle(p[0] + 4, p[1] - 2, 5);
-            if (estado >= 4 && i % 2 === 0) {
-                d.fillStyle(0xe84b3f, 1);
-                d.fillEllipse(p[0] + 1, p[1] - 6, 7, 9);
-                d.fillStyle(0xffd8a8, 0.8);
-                d.fillCircle(p[0] - 1, p[1] - 8, 1.2);
-                d.fillStyle(0x78bd4d, 1);
+            var p = folhas[(i + variante) % folhas.length];
+            d.fillStyle(i % 2 ? 0x1f8f4b : 0x146c37, 1);
+            d.fillEllipse(p[0], p[1], 15, 8);
+            d.lineStyle(1, 0x0b4d28, 0.55);
+            d.beginPath();
+            d.moveTo(p[0] - 5, p[1] + 1);
+            d.lineTo(p[0] + 5, p[1] - 1);
+            d.strokePath();
+        }
+
+        if (fase >= 4) {
+            var frutos = fase >= 5 ? [[-8, -9, 6], [5, -11, 7], [11, -1, 5], [-1, 2, 6]] : [[-6, -8, 5], [7, -5, 5]];
+            for (var f = 0; f < frutos.length; f++) {
+                var fr = frutos[f];
+                d.fillStyle(0xe11d2e, 1);
+                d.fillEllipse(fr[0], fr[1], fr[2] * 1.35, fr[2] * 1.55);
+                d.fillTriangle(fr[0] - fr[2] * 0.65, fr[1], fr[0] + fr[2] * 0.65, fr[1], fr[0], fr[1] + fr[2] * 1.15);
+                d.fillStyle(0x1f7a40, 1);
+                d.fillTriangle(fr[0] - 4, fr[1] - fr[2] * 0.7, fr[0], fr[1] - fr[2] * 1.2, fr[0] + 4, fr[1] - fr[2] * 0.7);
+                d.fillStyle(0xffe4a3, 0.8);
+                d.fillCircle(fr[0] - 2, fr[1] - 1, 1);
+                d.fillCircle(fr[0] + 2, fr[1] + 2, 1);
             }
         }
     }
 
     desenharLavanda(d, estado, variante) {
-        var hastes = estado === 2 ? 4 : (estado === 3 ? 7 : 10);
-        d.fillStyle(0x2f4d2d, 0.25);
-        d.fillEllipse(0, 8, 34, 10);
+        var fase = Math.min(estado, 5);
+        var tufos = fase >= 4 ? [[-13, 0, 0.9], [0, -5, 1.05], [13, 0, 0.9]] : [[-8, 1, 0.75], [8, 1, 0.75]];
 
-        for (var i = 0; i < hastes; i++) {
-            var ox = -15 + i * (30 / Math.max(1, hastes - 1));
-            var h = 18 + ((i + variante) % 4) * 5 + estado * 3;
-            d.lineStyle(2, 0x577f42, 1);
-            d.beginPath(); d.moveTo(0, 6); d.lineTo(ox, -h); d.strokePath();
-            if (estado >= 3) {
-                d.fillStyle(0x9b75c9, 1);
-                d.fillCircle(ox, -h, 3);
-                d.fillCircle(ox - 2, -h + 5, 3);
-                d.fillCircle(ox + 2, -h + 9, 3);
+        d.fillStyle(0x365a2e, 0.28);
+        d.fillEllipse(0, 9, 42, 14);
+
+        for (var t = 0; t < tufos.length; t++) {
+            var tufo = tufos[t];
+            var cx = tufo[0], cy = tufo[1], sc = tufo[2];
+            var folhas = fase >= 5 ? 8 : 4 + fase;
+            for (var i = 0; i < folhas; i++) {
+                var ox = cx + (i - folhas / 2) * 2.8 * sc;
+                var h = (12 + fase * 2 + (i % 3) * 2) * sc;
+                d.lineStyle(2, 0x4f9b3b, 0.95);
+                d.beginPath();
+                d.moveTo(cx, cy + 8);
+                d.lineTo(ox, cy - h);
+                d.strokePath();
+            }
+
+            d.fillStyle(0x60b044, 1);
+            d.fillEllipse(cx - 4 * sc, cy + 4, 14 * sc, 8 * sc);
+            d.fillEllipse(cx + 4 * sc, cy + 3, 14 * sc, 8 * sc);
+
+            if (fase >= 3) {
+                d.fillStyle(0x8b5cf6, 0.9);
+                d.fillEllipse(cx, cy - 11 * sc, 22 * sc, 14 * sc);
+                d.fillStyle(0xb7a0ff, 1);
+                d.fillCircle(cx - 7 * sc, cy - 12 * sc, 3 * sc);
+                d.fillCircle(cx - 2 * sc, cy - 16 * sc, 3 * sc);
+                d.fillCircle(cx + 5 * sc, cy - 13 * sc, 3 * sc);
+                d.fillCircle(cx + 9 * sc, cy - 8 * sc, 2.5 * sc);
+                if (fase >= 5) {
+                    d.fillStyle(0xd8ccff, 0.8);
+                    d.fillCircle(cx + 2 * sc, cy - 17 * sc, 1.5 * sc);
+                }
             }
         }
     }
 
     desenharGirassol(d, estado, variante) {
-        var flores = estado >= 5 ? 3 : (estado >= 4 ? 2 : 1);
-        var offsets = flores === 1 ? [0] : (flores === 2 ? [-8, 9] : [-12, 0, 12]);
-        d.fillStyle(0x304f2b, 0.25);
-        d.fillEllipse(0, 8, 34, 10);
+        var fase = Math.min(estado, 5);
+        var flores = fase >= 5 ? [-18, -9, 0, 10, 18] : (fase >= 4 ? [-11, 3, 15] : [0]);
 
-        for (var i = 0; i < offsets.length; i++) {
-            var ox = offsets[i];
-            var h = 21 + estado * 5 + ((i + variante) % 2) * 4;
-            d.lineStyle(3, 0x7f943f, 1);
-            d.beginPath(); d.moveTo(ox, 6); d.lineTo(ox, -h); d.strokePath();
-            d.fillStyle(0x85ad54, 1);
-            d.fillEllipse(ox - 7, -h * 0.45, 12, 7);
-            d.fillEllipse(ox + 7, -h * 0.58, 12, 7);
-            if (estado >= 4) {
-                d.fillStyle(0xf4c542, 1);
-                for (var p = 0; p < 8; p++) {
-                    var ang = p * Math.PI / 4;
-                    d.fillEllipse(ox + Math.cos(ang) * 7, -h + Math.sin(ang) * 7, 6, 4);
+        d.fillStyle(0x3f6a24, 0.25);
+        d.fillEllipse(0, 9, 42, 14);
+
+        for (var i = 0; i < flores.length; i++) {
+            var ox = flores[i] + ((i + variante) % 2 ? 1 : -1);
+            var h = (fase >= 5 ? 34 : 20 + fase * 4) + (i % 2) * 5;
+            d.lineStyle(2, 0x3e8d3c, 1);
+            d.beginPath();
+            d.moveTo(ox, 7);
+            d.lineTo(ox, -h);
+            d.strokePath();
+
+            d.fillStyle(0x5faa3b, 1);
+            d.fillEllipse(ox - 5, -h * 0.45, 11, 6);
+            d.fillEllipse(ox + 5, -h * 0.6, 11, 6);
+
+            if (fase >= 4) {
+                var cy = -h - 2;
+                d.fillStyle(0xffd21f, 1);
+                for (var p = 0; p < 10; p++) {
+                    var ang = p * Math.PI / 5;
+                    d.fillEllipse(ox + Math.cos(ang) * 7, cy + Math.sin(ang) * 7, 6, 4);
                 }
-                d.fillStyle(0x7c4a24, 1);
-                d.fillCircle(ox, -h, 6);
-                d.fillStyle(0x4f2f1b, 0.75);
-                d.fillCircle(ox, -h, 3);
+                d.fillStyle(0xb45309, 1);
+                d.fillCircle(ox, cy, 6);
+                d.fillStyle(0x7c2d12, 1);
+                d.fillCircle(ox, cy, 3);
+                d.fillStyle(0xfff7ad, 0.7);
+                d.fillCircle(ox - 2, cy - 3, 1.5);
+            }
+        }
+    }
+
+    desenharCenoura(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        var qtd = fase >= 4 ? 6 : (fase >= 3 ? 4 : 3);
+        d.fillStyle(0x6b4a2d, 0.26);
+        d.fillEllipse(0, 9, 42, 13);
+        for (var i = 0; i < qtd; i++) {
+            var ox = -18 + i * 7 + ((i + variante) % 2 ? 1 : -1);
+            d.lineStyle(2, 0x2f8f3a, 0.95);
+            d.beginPath(); d.moveTo(ox, 5); d.lineTo(ox - 3, -8 - fase); d.strokePath();
+            d.beginPath(); d.moveTo(ox, 5); d.lineTo(ox + 3, -7 - fase); d.strokePath();
+            if (fase >= 4) {
+                d.fillStyle(0xf97316, 1);
+                d.fillTriangle(ox - 4, 3, ox + 4, 3, ox, 14);
+                d.fillStyle(0xffedd5, 0.34);
+                d.fillCircle(ox - 1, 5, 1.4);
+            }
+        }
+    }
+
+    desenharBatata(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        d.fillStyle(0x4d7c0f, 0.24);
+        d.fillEllipse(0, 8, 42, 15);
+        var folhas = fase >= 4 ? 7 : 3 + fase;
+        d.fillStyle(0x4f9b3b, 1);
+        for (var i = 0; i < folhas; i++) {
+            var ox = -16 + i * 5 + ((i + variante) % 2);
+            d.fillEllipse(ox, -2 - (i % 3), 12, 7);
+        }
+        if (fase >= 5) {
+            var tub = [[-13, 9, 6], [-2, 12, 7], [11, 8, 5]];
+            for (var t = 0; t < tub.length; t++) {
+                d.fillStyle(0xc0843f, 1);
+                d.fillEllipse(tub[t][0], tub[t][1], tub[t][2] * 1.45, tub[t][2]);
+                d.fillStyle(0x7c4a21, 0.45);
+                d.fillCircle(tub[t][0] + 2, tub[t][1] - 1, 1.3);
+            }
+        }
+    }
+
+    desenharTomate(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        d.fillStyle(0x14532d, 0.25);
+        d.fillEllipse(0, 9, 42, 15);
+        var hastes = fase >= 4 ? [-13, 0, 13] : [-8, 8];
+        for (var i = 0; i < hastes.length; i++) {
+            var ox = hastes[i];
+            var h = 18 + fase * 3 + (i % 2) * 4;
+            d.lineStyle(2, 0x166534, 1);
+            d.beginPath(); d.moveTo(ox, 7); d.lineTo(ox, -h); d.strokePath();
+            d.fillStyle(0x22c55e, 0.95);
+            d.fillEllipse(ox - 6, -h * 0.45, 12, 7);
+            d.fillEllipse(ox + 6, -h * 0.62, 12, 7);
+            if (fase >= 4) {
+                d.fillStyle(0xdc2626, 1);
+                d.fillCircle(ox - 4, -h * 0.35, 5);
+                d.fillCircle(ox + 5, -h * 0.52, 4.5);
+                if (fase >= 5) d.fillCircle(ox, -h * 0.7, 4);
+                d.fillStyle(0xffffff, 0.28);
+                d.fillCircle(ox - 6, -h * 0.38, 1.5);
+            }
+        }
+    }
+
+    desenharPimento(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        d.fillStyle(0x0f3d24, 0.32);
+        d.fillEllipse(0, 9, 46, 16);
+        var ramos = fase >= 4 ? [-17, -6, 6, 17] : (fase >= 3 ? [-13, 0, 13] : [-8, 8]);
+        for (var i = 0; i < ramos.length; i++) {
+            var ox = ramos[i] + ((i + variante) % 2 ? 1 : -1);
+            var h = 16 + fase * 3;
+            d.lineStyle(3, 0x15803d, 1);
+            d.beginPath(); d.moveTo(ox, 7); d.lineTo(ox, -h); d.strokePath();
+            d.fillStyle(i % 2 ? 0x22c55e : 0x16a34a, 1);
+            d.fillEllipse(ox - 6, -h * 0.42, 15, 9);
+            d.fillEllipse(ox + 6, -h * 0.58, 15, 9);
+            d.fillEllipse(ox, -h * 0.76, 13, 8);
+            if (fase >= 3) {
+                d.fillStyle(0xfacc15, 0.9);
+                d.fillCircle(ox + 2, -h * 0.7, 2.2);
+            }
+            if (fase >= 4) {
+                var cor = i % 3 === 0 ? 0xef4444 : (i % 3 === 1 ? 0x22c55e : 0xf59e0b);
+                d.fillStyle(cor, 1);
+                d.fillRoundedRect(ox - 5, -h * 0.78, 10, 16, 5);
+                d.fillStyle(0xffffff, 0.3);
+                d.fillCircle(ox - 2, -h * 0.78 + 3, 1.6);
+                d.lineStyle(1, 0x14532d, 0.45);
+                d.strokeRoundedRect(ox - 5, -h * 0.78, 10, 16, 5);
+            }
+        }
+    }
+
+    desenharAbobora(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        d.fillStyle(0x355e24, 0.28);
+        d.fillEllipse(0, 9, 48, 16);
+        d.lineStyle(2, 0x2f8f3a, 0.9);
+        d.beginPath(); d.moveTo(-20, 7); d.lineTo(-8, -2); d.lineTo(6, 5); d.lineTo(20, -2); d.strokePath();
+        d.fillStyle(0x4ade80, 0.9);
+        d.fillEllipse(-13, 0, 16, 8);
+        d.fillEllipse(11, -1, 16, 8);
+        if (fase >= 4) {
+            var w = fase >= 5 ? 28 : 20;
+            d.fillStyle(0xf97316, 1);
+            d.fillEllipse(0, 5, w, 19);
+            d.fillStyle(0xea580c, 1);
+            d.fillEllipse(-6, 5, w * 0.36, 18);
+            d.fillEllipse(6, 5, w * 0.36, 18);
+            d.lineStyle(2, 0x7c2d12, 0.7);
+            d.beginPath(); d.moveTo(0, -7); d.lineTo(2, -14); d.strokePath();
+        }
+    }
+
+    desenharMelancia(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        d.fillStyle(0x14532d, 0.24);
+        d.fillEllipse(0, 9, 50, 16);
+        d.lineStyle(2, 0x15803d, 0.9);
+        d.beginPath(); d.moveTo(-22, 4); d.lineTo(-8, -3); d.lineTo(8, 5); d.lineTo(23, -2); d.strokePath();
+        d.fillStyle(0x22c55e, 0.9);
+        d.fillEllipse(-13, 0, 17, 8);
+        d.fillEllipse(12, -1, 17, 8);
+        if (fase >= 4) {
+            var frutos = fase >= 5 ? [[-9, 7, 14], [12, 5, 12]] : [[0, 7, 13]];
+            for (var i = 0; i < frutos.length; i++) {
+                var fr = frutos[i];
+                d.fillStyle(0x166534, 1);
+                d.fillEllipse(fr[0], fr[1], fr[2] * 1.45, fr[2]);
+                d.lineStyle(1.3, 0xbbf7d0, 0.75);
+                d.strokeEllipse(fr[0], fr[1], fr[2] * 0.72, fr[2] * 0.56);
+            }
+        }
+    }
+
+    desenharCogumelo(d, estado, variante) {
+        var fase = Math.min(estado, 5);
+        var qtd = fase >= 5 ? 5 : (fase >= 3 ? 3 : 2);
+        d.fillStyle(0x312e81, 0.24);
+        d.fillEllipse(0, 9, 42, 14);
+        for (var i = 0; i < qtd; i++) {
+            var ox = -14 + i * 7 + ((i + variante) % 2 ? 2 : -1);
+            var h = 8 + fase * 2 + (i % 2) * 3;
+            d.fillStyle(0xf8fafc, 1);
+            d.fillRoundedRect(ox - 3, 5 - h, 6, h, 3);
+            d.fillStyle(i % 2 ? 0x8b5cf6 : 0xa855f7, 1);
+            d.fillEllipse(ox, 5 - h, 14, 9);
+            if (fase >= 4) {
+                d.fillStyle(0xfef3c7, 0.85);
+                d.fillCircle(ox - 3, 4 - h, 1.2);
+                d.fillCircle(ox + 3, 3 - h, 1.1);
             }
         }
     }
@@ -564,7 +777,21 @@ class CenaQuinta extends Phaser.Scene {
     }
 
     desenharPlanta(d, estado, tipo, variante, fruto) {
-        if (tipo === 'milho') {
+        if (tipo === 'cenoura') {
+            this.desenharCenoura(d, estado, variante);
+        } else if (tipo === 'batata') {
+            this.desenharBatata(d, estado, variante);
+        } else if (tipo === 'tomate') {
+            this.desenharTomate(d, estado, variante);
+        } else if (tipo === 'pimento') {
+            this.desenharPimento(d, estado, variante);
+        } else if (tipo === 'abóbora') {
+            this.desenharAbobora(d, estado, variante);
+        } else if (tipo === 'melancia') {
+            this.desenharMelancia(d, estado, variante);
+        } else if (tipo === 'cogumelo') {
+            this.desenharCogumelo(d, estado, variante);
+        } else if (tipo === 'milho') {
             this.desenharMilho(d, estado, variante);
         } else if (tipo === 'morango') {
             this.desenharMorango(d, estado, variante);
@@ -647,21 +874,10 @@ class CenaQuinta extends Phaser.Scene {
             if (estado === 1) {
                 d.fillStyle(0x78350f, 1);
                 d.fillCircle(-5, -2, 3); d.fillCircle(4, 1, 3); d.fillCircle(0, -6, 2);
-            } else if (estado === 2) {
-                d.fillStyle(0x4ade80, 1); d.fillRect(-1, -14, 2, 12); d.fillEllipse(-3, -14, 10, 7);
-            } else if (estado === 3) {
-                d.fillStyle(0x4ade80, 1); d.fillRect(-1, -20, 2, 18); d.fillEllipse(-5, -18, 13, 9); d.fillEllipse(4, -21, 11, 8);
-            } else if (estado === 4) {
-                d.fillStyle(0x86efac, 1); d.fillRect(-1, -25, 2, 21); d.fillEllipse(-7, -21, 16, 11); d.fillEllipse(5, -24, 14, 10); d.fillEllipse(-1, -27, 13, 9);
-            } else if (estado >= 5) {
-                var cul = CULTURAS[G.tipo[x][y] || 'girassol'];
             } else if (estado >= 2) {
                 var tipoPlanta = G.tipo[x][y] || 'girassol';
-                var cul = CULTURAS[tipoPlanta];
+                var cul = CULTURAS[tipoPlanta] || CULTURAS.girassol;
                 var fc = cul.fruto || 0xf97316;
-                d.fillStyle(0x86efac, 1); d.fillRect(-1, -25, 2, 21); d.fillEllipse(-7, -21, 16, 11); d.fillEllipse(5, -24, 14, 10);
-                d.fillStyle(fc, 1); d.fillCircle(-5, -27, 6); d.fillCircle(6, -23, 5);
-                d.fillStyle(0xffffff, 0.35); d.fillCircle(-7, -29, 3);
                 this.desenharPlanta(d, estado, tipoPlanta, this.variantePlanta(x, y, tipoPlanta), fc);
             }
             if (regado && estado < 5) {
@@ -809,11 +1025,10 @@ class CenaQuinta extends Phaser.Scene {
         var out = [];
         for (var i = 0; i < pontos.length; i++) {
             var p = pontos[i];
-            if (p.x >= 0 && p.x < COLS && p.y >= 0 && p.y < ROWS && !(p.x === 0 && p.y === 0)) {
             var repetido = out.some(function(alvo) {
                 return alvo.x === p.x && alvo.y === p.y;
             });
-            if (p.x >= 0 && p.x < COLS && p.y >= 0 && p.y < ROWS && !repetido) {
+            if (p.x >= 0 && p.x < COLS && p.y >= 0 && p.y < ROWS && !(p.x === 0 && p.y === 0) && !repetido) {
                 out.push(p);
             }
         }
@@ -1065,7 +1280,6 @@ class CenaQuinta extends Phaser.Scene {
             }
         }
 
-        if (G.animais) {
         if (G.animais && terrenoTodoDesbloqueado()) {
             var animais = this.posAnimais();
             if (MaquinaEstados.podeConduzir() &&
@@ -1247,28 +1461,7 @@ class CenaQuinta extends Phaser.Scene {
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.kN)) {
-<<<<<<< Updated upstream
-            var imposto = Math.min(Math.floor(G.moedas * 0.04), 400 + G.dia * 100);
-            var racao = custoRacaoGalinhas();
-            var rendimento = rendimentoDiario();
-            G.dia++;
-            G.aduboRestante = 2;
-            G.combo = 0;
-            novoEventoDia();
-            novoContrato();
-            G.regaRestante = 5 + (G.eventoDia.rega || 0);
-            G.moedas -= imposto + racao;
-            G.moedas += rendimento;
-            this.updateUI();
-            if (window.AudioJogo) AudioJogo.sfx('day');
-            toast('📅 ' + (window.IdiomasJogo ? IdiomasJogo.msg('diaResumo', 'Dia {dia} — {evento}', { dia: G.dia, evento: G.eventoDia.msg }) : 'Dia ' + G.dia + ' — ' + G.eventoDia.msg), 'ok', 2800);
-            if (imposto > 0) setTimeout(function() { toast('🏛️ ' + (window.IdiomasJogo ? IdiomasJogo.msg('impostos', 'Impostos: -{valor}€', { valor: imposto }) : 'Impostos: -' + imposto + '€'), 'war', 2500); }, 400);
-            if (racao > 0) setTimeout(function() { toast('🐔 ' + (window.IdiomasJogo ? IdiomasJogo.msg('racao', 'Ração: -{valor}€', { valor: racao }) : 'Ração: -' + racao + '€'), 'war', 2500); }, 700);
-            if (rendimento > 0) setTimeout(function() { toast('💼 ' + (window.IdiomasJogo ? IdiomasJogo.msg('rendimento', 'Rendimento: +{valor}€', { valor: rendimento }) : 'Rendimento: +' + rendimento + '€'), 'ok', 2500); }, 1000);
-            guardarJogo();
-=======
             this.passarDia();
->>>>>>> Stashed changes
         }
 
         if (t < this._proximoMov) return;
@@ -1276,10 +1469,11 @@ class CenaQuinta extends Phaser.Scene {
         var k = this.keys;
 
         var nx = tx, ny = ty;
-        if ((this.kW.isDown || k.up.isDown)) { ny = ty - 1; this.tDirecao = { x: 0, y: -1 }; }
-        else if ((this.kS.isDown || k.down.isDown)) { ny = ty + 1; this.tDirecao = { x: 0, y: 1 }; }
-        if ((this.kA.isDown || k.left.isDown)) { nx = tx - 1; this.tDirecao = { x: -1, y: 0 }; this.trCont.setScale(-1,1); }
-        else if ((this.kD.isDown || k.right.isDown)) { nx = tx + 1; this.tDirecao = { x: 1, y: 0 }; this.trCont.setScale(1,1);  }
+        var kd = this._teclasDiretas || {};
+        if ((this.kW.isDown || k.up.isDown || kd.KeyW || kd.ArrowUp)) { ny = ty - 1; this.tDirecao = { x: 0, y: -1 }; }
+        else if ((this.kS.isDown || k.down.isDown || kd.KeyS || kd.ArrowDown)) { ny = ty + 1; this.tDirecao = { x: 0, y: 1 }; }
+        if ((this.kA.isDown || k.left.isDown || kd.KeyA || kd.ArrowLeft)) { nx = tx - 1; this.tDirecao = { x: -1, y: 0 }; this.trCont.setScale(-1,1); }
+        else if ((this.kD.isDown || k.right.isDown || kd.KeyD || kd.ArrowRight)) { nx = tx + 1; this.tDirecao = { x: 1, y: 0 }; this.trCont.setScale(1,1);  }
 
         if ((nx !== tx || ny !== ty) && (this.dentroGrid(nx, ny) || this.ehTileAcesso(nx, ny))) {
             this.tLogico.x = nx;
